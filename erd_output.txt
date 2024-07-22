@@ -1,0 +1,324 @@
+Table academic_departments {
+  id int [pk, increment]
+  campus_id_id int [ref: > campuses.id]
+  name text
+  contact_phone text
+  contact_email email
+  head_of_department text
+  created_at date
+}
+
+Table addresses {
+  id int [pk, increment]
+  address_line_1 text
+  address_line_2 text
+  city text
+  state text
+  country text
+  postal_code text
+  latitude number
+  longitude number
+  created_at date
+}
+
+Table administrative_offices {
+  id int [pk, increment]
+  campus_id_id int [ref: > campuses.id]
+  name text
+  address_id_id int [ref: > addresses.id]
+  contact_phone text
+  contact_email email
+  office_hours text
+  created_at date
+}
+
+Table admissions {
+  id int [pk, increment]
+  university_id_id int [ref: > universities.id]
+  program_id_id int [ref: > programs.id]
+  course_id_id int [ref: > courses.id]
+  admin_id_id int [ref: > users.id]
+  admission_title text
+  admission_description textarea
+  admission_deadline date
+  created_at date
+}
+
+Table campuses {
+  id int [pk, increment]
+  _id text
+  university_id_id int [ref: > universities.id]
+  name text
+  address_id_id int [ref: > addresses.id]
+  contact_phone text
+  contact_email email
+  website text
+  facilities textarea
+  latitude number
+  longitude number
+  campus_type text
+  established_date date
+  accreditations textarea
+  student_population number
+  campus_area number
+  residential_facilities checkbox
+  transportation_options checkbox
+  healthcare_facilities checkbox
+  sports_facilities checkbox
+  library_facilities checkbox
+  dining_options checkbox
+  parking_facilities checkbox
+  security_features checkbox
+  created_at date
+}
+
+Table certificates {
+  id int [pk, increment]
+  certificate_name text
+  certificate_type select
+  attachment_url upload
+  certificate_created_date date
+  user_id_id int [ref: > users.id]
+}
+
+Table chats {
+  id int [pk, increment]
+  student_id_id int [ref: > users.id]
+  admin_id_id int [ref: > users.id]
+  message textarea
+  timestamp date
+}
+
+Table courses {
+  id int [pk, increment]
+  program_id_id int [ref: > programs.id]
+  course_name text
+  course_description textarea
+  course_duration text
+  course_fee number
+  created_at date
+}
+
+Table emergency_contacts {
+  id int [pk, increment]
+  _id text
+  campus_id_id int [ref: > campuses.id]
+  service text
+  contact_name text
+  contact_phone text
+  contact_email email
+  office_location text
+  availability text
+  created_at date
+}
+
+Table fee_structures {
+  id int [pk, increment]
+  program_id_id int [ref: > programs.id]
+  tuition_fee number
+  application_fee number
+  other_fees textarea
+  currency text
+  payment_schedule textarea
+  created_at date
+}
+
+Table form_responses {
+  id int [pk, increment]
+  form_id_id int [ref: > forms.id]
+  responses array
+  submitted_at date
+}
+
+Table forms {
+  id int [pk, increment]
+  title text
+  description textarea
+  fields array
+  created_at date
+}
+
+Table healthcare_facilities {
+  id int [pk, increment]
+  campus_id_id int [ref: > campuses.id]
+  facility_name text
+  services_offered textarea
+  address_id_id int [ref: > addresses.id]
+  contact_phone text
+  contact_email email
+  website text
+  hours_of_operation text
+  location text
+  emergency_services textarea
+  created_at date
+}
+
+Table library_facilities {
+  id int [pk, increment]
+  campus_id_id int [ref: > campuses.id]
+  name text
+  total_books number
+  total_journals number
+  digital_resources textarea
+  address_id_id int [ref: > addresses.id]
+  contact_phone text
+  contact_email email
+  website text
+  hours_of_operation text
+  created_at date
+}
+
+Table media {
+  id int [pk, increment]
+  alt text
+}
+
+Table messages {
+  id int [pk, increment]
+  chat_id_id int [ref: > chats.id]
+  sender_id_id int [ref: > users.id]
+  receiver_id_id int [ref: > users.id]
+  message_text textarea
+  timestamp date
+}
+
+Table programs {
+  id int [pk, increment]
+  campus_id_id int [ref: > campuses.id]
+  name text
+  major text
+  fee_structure_id_id int [ref: > fee_structures.id]
+  duration text
+  degree_level text
+  accreditations textarea
+  mode_of_study select
+  language_of_instruction text
+  intake_periods array
+  scholarship_options textarea
+  created_at date
+}
+
+Table residential_facilities {
+  id int [pk, increment]
+  campus_id_id int [ref: > campuses.id]
+  name text
+  type text
+  capacity number
+  address_id_id int [ref: > addresses.id]
+  contact_phone text
+  contact_email email
+  amenities textarea
+  room_types textarea
+  cost_per_term number
+  rules_and_regulations textarea
+  created_at date
+}
+
+Table scholarships {
+  id int [pk, increment]
+  university_id_id int [ref: > universities.id]
+  scholarship_name text
+  scholarship_description textarea
+  eligibility_criteria textarea
+  amount number
+  created_at date
+}
+
+Table sports_facilities {
+  id int [pk, increment]
+  campus_id_id int [ref: > campuses.id]
+  facility_name text
+  type text
+  available_sports textarea
+  membership_cost number
+  address_id_id int [ref: > addresses.id]
+  contact_phone text
+  contact_email email
+  hours_of_operation text
+  location text
+  created_at date
+}
+
+Table student_scholarships {
+  id int [pk, increment]
+  student_id_id int [ref: > users.id]
+  scholarship_id_id int [ref: > scholarships.id]
+  application_date date
+  approval_status select
+  created_at date
+}
+
+Table transportation_options {
+  id int [pk, increment]
+  campus_id_id int [ref: > campuses.id]
+  type text
+  schedule textarea
+  routes textarea
+  cost number
+  contact_phone text
+  contact_email email
+  website text
+  created_at date
+}
+
+Table universities {
+  id int [pk, increment]
+  _id text
+  name text
+  founded date
+  description textarea
+  address_id_id int [ref: > addresses.id]
+  website text
+  ranking text
+  affiliations textarea
+  motto text
+  colors text
+  mascot text
+  type text
+  total_students number
+  total_faculty number
+  total_alumni number
+  endowment number
+  campus_size number
+  annual_budget number
+  research_output number
+  international_students number
+  languages textarea
+  logo_url upload
+  accreditations textarea
+  notable_alumni textarea
+  created_at date
+}
+
+Table user_profiles {
+  id int [pk, increment]
+  last_degree select
+  supporting_documents array
+  created_at date
+}
+
+Table user_requests {
+  id int [pk, increment]
+  admission_id_id int [ref: > admissions.id]
+  request_attachments textarea
+  created_at date
+}
+
+Table users {
+  id int [pk, increment]
+  first_name text
+  last_name text
+  date_of_birth date
+  gender select
+  email email
+  phone_number text
+  address_id_id int [ref: > addresses.id]
+  user_type select
+  registration_no text
+  university_id_id int [ref: > universities.id]
+  campus_id_id int [ref: > campuses.id]
+  user_profile_id_id int [ref: > user_profiles.id]
+  profile_image_url upload
+  created_at date
+}
+
