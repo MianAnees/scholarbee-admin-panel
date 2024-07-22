@@ -25,8 +25,8 @@ jobs:
       - name: Build and Push Docker Container
         env:
           AWS_REGION: us-east-1
-          AWS_ACCOUNT_ID: 720021348223
-          APP_NAME: scolarbee-admin-panel
+          AWS_ACCOUNT_ID: 378105798678
+          APP_NAME: scholarbee-admin-panel
         run: |
           aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
           docker build -t $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$APP_NAME:latest .
