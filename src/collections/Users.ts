@@ -57,7 +57,7 @@ const Users: CollectionConfig = {
       name: 'address_id',
       type: 'relationship',
       relationTo: 'addresses',
-      required: true,
+      required: false,
     },
     {
       name: 'user_type',

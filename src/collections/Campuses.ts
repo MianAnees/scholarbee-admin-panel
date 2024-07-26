@@ -7,11 +7,6 @@ const Campuses: CollectionConfig = {
     },
     fields: [
         {
-            name: '_id',
-            type: 'text',
-            required: true,
-        },
-        {
             name: 'university_id',
             type: 'relationship',
             relationTo: 'universities',
