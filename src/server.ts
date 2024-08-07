@@ -23,7 +23,31 @@ const start = async () => {
     },
   })
 
-  // Add your own express routes here
+
+  app.post('/api/signup', async (req, res) => {
+    const { email, password, first_name, last_name, gender, phone_number, user_type, date_of_birth } = req.body;
+
+    try {
+      const user = await payload.create({
+        collection: 'users',
+        data: {
+          email,
+          password,
+          first_name,
+          last_name,
+          date_of_birth,
+          gender,
+          phone_number,
+          user_type
+        },
+        overrideAccess: true,
+      });
+
+      res.status(200).json({ user });
+    } catch (error) {
+      res.status(400).json({ error: error.message });
+    }
+  });
 
   app.listen(process.env.PORT || 3000)
 }

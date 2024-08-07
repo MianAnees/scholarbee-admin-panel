@@ -2,24 +2,32 @@ import { CollectionConfig } from 'payload/types';
 
 const Applications: CollectionConfig = {
     slug: 'applications',
+    labels: {
+        singular: 'Application',
+        plural: 'Applications',
+
+    },
     fields: [
         {
             name: 'applicant',
             type: 'relationship',
             relationTo: 'users',
             required: true,
+            label: 'Applicant',
         },
         {
             name: 'program',
             type: 'relationship',
             relationTo: 'programs',
             required: true,
+            label: 'Program',
         },
         {
             name: 'form_response',
             type: 'relationship',
             relationTo: 'form_responses',
             required: true,
+            label: 'Form Response',
         },
         {
             name: 'submission_date',
@@ -28,6 +36,7 @@ const Applications: CollectionConfig = {
                 readOnly: true,
             },
             defaultValue: () => new Date().toISOString(),
+            label: 'Submission Date',
         },
         {
             name: 'status',
@@ -38,6 +47,7 @@ const Applications: CollectionConfig = {
                 'Rejected',
             ],
             required: true,
+            label: 'Status',
         },
     ],
 };

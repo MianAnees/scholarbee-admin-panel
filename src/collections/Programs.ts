@@ -2,8 +2,12 @@ import { CollectionConfig } from 'payload/types';
 
 const Programs: CollectionConfig = {
     slug: 'programs',
+    labels: {
+        singular: 'Program',
+        plural: 'Programs',
+    },
     admin: {
-        useAsTitle: "name"
+        useAsTitle: 'name',
     },
     fields: [
         {
@@ -11,37 +15,37 @@ const Programs: CollectionConfig = {
             type: 'relationship',
             relationTo: 'campuses',
             required: false,
+            label: 'Campus',
         },
         {
             name: 'name',
             type: 'text',
             required: true,
+            label: 'Program Name',
         },
         {
             name: 'major',
             type: 'text',
             required: false,
+            label: 'Major',
         },
-        // {
-        //     name: 'fee_structure_id',
-        //     type: 'relationship',
-        //     relationTo: 'fee_structures',
-        //     required: false,
-        // },
         {
             name: 'duration',
             type: 'text',
             required: false,
+            label: 'Duration',
         },
         {
             name: 'degree_level',
             type: 'text',
             required: false,
+            label: 'Degree Level',
         },
         {
             name: 'accreditations',
             type: 'textarea',
             required: false,
+            label: 'Accreditations',
         },
         {
             name: 'mode_of_study',
@@ -49,34 +53,39 @@ const Programs: CollectionConfig = {
             options: [
                 'Online',
                 'Onsite',
-                'Hybrid'
+                'Hybrid',
             ],
             required: false,
+            label: 'Mode of Study',
         },
         {
             name: 'language_of_instruction',
             type: 'text',
             required: false,
+            label: 'Language of Instruction',
         },
         {
             name: 'intake_periods',
             type: 'array',
             required: false,
+            label: 'Intake Periods',
             fields: [
                 {
                     name: 'intake_period',
                     type: 'select',
                     options: [
                         'Fall',
-                        'Spring'
+                        'Spring',
                     ],
-                }
-            ]
+                    label: 'Intake Period',
+                },
+            ],
         },
         {
             name: 'scholarship_options',
             type: 'textarea',
             required: false,
+            label: 'Scholarship Options',
         },
         {
             name: 'created_at',
@@ -85,6 +94,7 @@ const Programs: CollectionConfig = {
                 readOnly: true,
             },
             defaultValue: () => new Date().toISOString(),
+            label: 'Created At',
         },
     ],
 };
