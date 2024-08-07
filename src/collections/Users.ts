@@ -3,29 +3,32 @@ import { CollectionConfig } from 'payload/types';
 const Users: CollectionConfig = {
   slug: 'users',
   auth: true,
+  labels: {
+    singular: 'User',
+    plural: 'Users',
+
+  },
   admin: {
     useAsTitle: 'email',
   },
   fields: [
-    // {
-    //   name: '_id',
-    //   type: 'text',
-    //   required: true,
-    // },
     {
       name: 'first_name',
       type: 'text',
       required: true,
+      label: 'First Name',
     },
     {
       name: 'last_name',
       type: 'text',
       required: true,
+      label: 'Last Name',
     },
     {
       name: 'date_of_birth',
       type: 'date',
       required: true,
+      label: 'Date of Birth',
       admin: {
         description: 'Required for students',
       },
@@ -39,6 +42,7 @@ const Users: CollectionConfig = {
         'Other',
       ],
       required: true,
+      label: 'Gender',
       admin: {
         description: 'Required for students',
       },
@@ -47,17 +51,20 @@ const Users: CollectionConfig = {
       name: 'email',
       type: 'email',
       required: true,
+      label: 'Email',
     },
     {
       name: 'phone_number',
       type: 'text',
       required: true,
+      label: 'Phone Number',
     },
     {
       name: 'address_id',
       type: 'relationship',
       relationTo: 'addresses',
       required: false,
+      label: 'Address',
     },
     {
       name: 'user_type',
@@ -67,6 +74,7 @@ const Users: CollectionConfig = {
         'Admin',
       ],
       required: true,
+      label: 'User Type',
     },
     {
       name: 'registration_no',
@@ -76,6 +84,7 @@ const Users: CollectionConfig = {
         description: 'Required for students',
       },
       required: false,
+      label: 'Registration Number',
     },
     {
       name: 'university_id',
@@ -85,6 +94,7 @@ const Users: CollectionConfig = {
         condition: (data) => data.user_type === 'Admin',
         description: 'Required for admins',
       },
+      label: 'University',
     },
     {
       name: 'campus_id',
@@ -94,6 +104,7 @@ const Users: CollectionConfig = {
         condition: (data) => data.user_type === 'Admin',
         description: 'Required for campus admins',
       },
+      label: 'Campus',
     },
     {
       name: 'user_profile_id',
@@ -103,12 +114,14 @@ const Users: CollectionConfig = {
         condition: (data) => data.user_type === 'Student',
         description: 'Required for Students',
       },
+      label: 'User Profile',
     },
     {
       name: 'profile_image_url',
       type: 'upload',
       relationTo: 'media',
       required: false,
+      label: 'Profile Image URL',
       admin: {
         description: 'Profile Image',
       },
@@ -120,6 +133,7 @@ const Users: CollectionConfig = {
         readOnly: true,
       },
       defaultValue: () => new Date().toISOString(),
+      label: 'Created At',
     },
   ],
 };

@@ -2,6 +2,10 @@ import { CollectionConfig } from 'payload/types';
 
 const Media: CollectionConfig = {
     slug: 'media',
+    labels: {
+        singular: 'Media Item',
+        plural: 'Media Items',
+    },
     upload: {
         staticURL: '/media',
         staticDir: 'media',
@@ -26,7 +30,8 @@ const Media: CollectionConfig = {
         {
             name: 'alt',
             type: 'text',
-            required: true,
+            required: false,
+            label: 'Alternative Text',
         },
     ],
 };
