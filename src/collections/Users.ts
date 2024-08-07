@@ -1,0 +1,141 @@
+import { CollectionConfig } from 'payload/types';
+
+const Users: CollectionConfig = {
+  slug: 'users',
+  auth: true,
+  labels: {
+    singular: 'User',
+    plural: 'Users',
+
+  },
+  admin: {
+    useAsTitle: 'email',
+  },
+  fields: [
+    {
+      name: 'first_name',
+      type: 'text',
+      required: true,
+      label: 'First Name',
+    },
+    {
+      name: 'last_name',
+      type: 'text',
+      required: true,
+      label: 'Last Name',
+    },
+    {
+      name: 'date_of_birth',
+      type: 'date',
+      required: true,
+      label: 'Date of Birth',
+      admin: {
+        description: 'Required for students',
+      },
+    },
+    {
+      name: 'gender',
+      type: 'select',
+      options: [
+        'Male',
+        'Female',
+        'Other',
+      ],
+      required: true,
+      label: 'Gender',
+      admin: {
+        description: 'Required for students',
+      },
+    },
+    {
+      name: 'email',
+      type: 'email',
+      required: true,
+      label: 'Email',
+    },
+    {
+      name: 'phone_number',
+      type: 'text',
+      required: true,
+      label: 'Phone Number',
+    },
+    {
+      name: 'address_id',
+      type: 'relationship',
+      relationTo: 'addresses',
+      required: false,
+      label: 'Address',
+    },
+    {
+      name: 'user_type',
+      type: 'select',
+      options: [
+        'Student',
+        'Admin',
+      ],
+      required: true,
+      label: 'User Type',
+    },
+    {
+      name: 'registration_no',
+      type: 'text',
+      admin: {
+        condition: (data) => data.user_type === 'Student',
+        description: 'Required for students',
+      },
+      required: false,
+      label: 'Registration Number',
+    },
+    {
+      name: 'university_id',
+      type: 'relationship',
+      relationTo: 'universities',
+      admin: {
+        condition: (data) => data.user_type === 'Admin',
+        description: 'Required for admins',
+      },
+      label: 'University',
+    },
+    {
+      name: 'campus_id',
+      type: 'relationship',
+      relationTo: 'campuses',
+      admin: {
+        condition: (data) => data.user_type === 'Admin',
+        description: 'Required for campus admins',
+      },
+      label: 'Campus',
+    },
+    {
+      name: 'user_profile_id',
+      type: 'relationship',
+      relationTo: 'user_profiles',
+      admin: {
+        condition: (data) => data.user_type === 'Student',
+        description: 'Required for Students',
+      },
+      label: 'User Profile',
+    },
+    {
+      name: 'profile_image_url',
+      type: 'upload',
+      relationTo: 'media',
+      required: false,
+      label: 'Profile Image URL',
+      admin: {
+        description: 'Profile Image',
+      },
+    },
+    {
+      name: 'created_at',
+      type: 'date',
+      admin: {
+        readOnly: true,
+      },
+      defaultValue: () => new Date().toISOString(),
+      label: 'Created At',
+    },
+  ],
+};
+
+export default Users;
