@@ -2,8 +2,12 @@ import { CollectionConfig } from 'payload/types';
 
 const SportsFacilities: CollectionConfig = {
     slug: 'sports_facilities',
+    labels: {
+        singular: 'Sports Facility',
+        plural: 'Sports Facilities',
+    },
     admin: {
-        useAsTitle: "facility_name"
+        useAsTitle: 'facility_name',
     },
     fields: [
         {
@@ -11,52 +15,62 @@ const SportsFacilities: CollectionConfig = {
             type: 'relationship',
             relationTo: 'campuses',
             required: true,
+            label: 'Campus',
         },
         {
             name: 'facility_name',
             type: 'text',
             required: true,
+            label: 'Facility Name',
         },
         {
             name: 'type',
             type: 'text',
             required: false,
+            label: 'Facility Type',
         },
         {
             name: 'available_sports',
             type: 'textarea',
             required: false,
+            label: 'Available Sports',
         },
         {
             name: 'membership_cost',
             type: 'number',
             required: false,
+            label: 'Membership Cost',
         },
         {
             name: 'address_id',
             type: 'relationship',
             relationTo: 'addresses',
             required: true,
+            label: 'Address',
         },
         {
             name: 'contact_phone',
             type: 'text',
             required: false,
+            label: 'Contact Phone',
         },
         {
             name: 'contact_email',
             type: 'email',
             required: false,
+            label: 'Contact Email',
         },
         {
             name: 'hours_of_operation',
             type: 'text',
             required: false,
+            label: 'Hours of Operation',
         },
         {
             name: 'location',
             type: 'text',
             required: false,
+            label: 'Location',
         },
         {
             name: 'created_at',
@@ -65,6 +79,7 @@ const SportsFacilities: CollectionConfig = {
                 readOnly: true,
             },
             defaultValue: () => new Date().toISOString(),
+            label: 'Created At',
         },
     ],
 };
