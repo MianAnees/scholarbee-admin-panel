@@ -5,7 +5,6 @@ const Admissions: CollectionConfig = {
     labels: {
         singular: 'Admission',
         plural: 'Admissions',
-
     },
     admin: {
         useAsTitle: 'admission_title',
@@ -34,28 +33,11 @@ const Admissions: CollectionConfig = {
             label: 'University',
         },
         {
-            name: 'program_id',
+            name: 'campus_id',
             type: 'relationship',
-            relationTo: 'programs',
+            relationTo: 'campuses',
             required: true,
-            label: 'Program',
-        },
-        {
-            name: 'course_id',
-            type: 'relationship',
-            relationTo: 'courses',
-            required: true,
-            label: 'Course',
-        },
-        {
-            name: 'admin_id',
-            type: 'relationship',
-            relationTo: 'users',
-            admin: {
-                description: 'Admin who posted the admission',
-            },
-            required: true,
-            label: 'Admin',
+            label: 'Campus',
         },
         {
             name: 'admission_title',
@@ -84,7 +66,26 @@ const Admissions: CollectionConfig = {
             name: 'admission_startdate',
             type: 'date',
             required: false,
-            label: 'Admission StartDate',
+            label: 'Admission Start Date',
+        },
+        {
+            name: 'admission_announcements',
+            type: 'array',
+            label: 'Admission Announcements',
+            fields: [
+                {
+                    name: 'key',
+                    type: 'text',
+                    label: 'Announcement Key',
+                    required: true,
+                },
+                {
+                    name: 'value',
+                    type: 'textarea',
+                    label: 'Announcement Value',
+                    required: true,
+                },
+            ],
         },
         {
             name: 'admission_requirements',
