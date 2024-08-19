@@ -5,7 +5,6 @@ const Applications: CollectionConfig = {
     labels: {
         singular: 'Application',
         plural: 'Applications',
-
     },
     fields: [
         {
@@ -14,6 +13,13 @@ const Applications: CollectionConfig = {
             relationTo: 'users',
             required: true,
             label: 'Applicant',
+        },
+        {
+            name: 'admission',
+            type: 'relationship',
+            relationTo: 'admissions',
+            required: true,
+            label: 'Admission',
         },
         {
             name: 'program',
