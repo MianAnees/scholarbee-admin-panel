@@ -27,7 +27,7 @@ const Users: CollectionConfig = {
     {
       name: 'date_of_birth',
       type: 'date',
-      required: true,
+      required: false,
       label: 'Date of Birth',
       admin: {
         description: 'Required for students',
@@ -41,12 +41,14 @@ const Users: CollectionConfig = {
         'Female',
         'Other',
       ],
-      required: true,
+      required: false,
       label: 'Gender',
       admin: {
         description: 'Required for students',
       },
     },
+    //nationality
+    //
     {
       name: 'email',
       type: 'email',
@@ -56,7 +58,7 @@ const Users: CollectionConfig = {
     {
       name: 'phone_number',
       type: 'text',
-      required: true,
+      required: false,
       label: 'Phone Number',
     },
     {

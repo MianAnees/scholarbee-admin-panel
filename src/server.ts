@@ -25,7 +25,7 @@ const start = async () => {
 
 
   app.post('/api/signup', async (req, res) => {
-    const { email, password, first_name, last_name, gender, phone_number, user_type, date_of_birth } = req.body;
+    const { email, password, first_name, last_name, phone_number, user_type } = req.body;
 
     try {
       const user = await payload.create({
@@ -35,8 +35,6 @@ const start = async () => {
           password,
           first_name,
           last_name,
-          date_of_birth,
-          gender,
           phone_number,
           user_type
         },
