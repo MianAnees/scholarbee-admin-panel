@@ -1,4 +1,6 @@
+import payload from 'payload';
 import { CollectionConfig } from 'payload/types';
+import { transporter } from '../utiles/mailConfig';
 
 const Users: CollectionConfig = {
   slug: 'users',
@@ -137,7 +139,67 @@ const Users: CollectionConfig = {
       defaultValue: () => new Date().toISOString(),
       label: 'Created At',
     },
+    {
+      name: 'verifyToken',
+      type: 'text',
+      hidden: true,
+      defaultValue: "",
+    },
+    {
+      name: '_verified',
+      type: 'checkbox',
+      defaultValue: false,
+      admin: {
+        readOnly: true
+      }
+    },
   ],
+  // hooks: {
+  //   afterChange: [async ({ operation, doc, req }) => {
+  //     console.log(operation, "------")
+  //     try {
+  //       if (operation === 'create' && !doc._verified) {
+  //         const verifyToken = crypto.randomBytes(20).toString('hex');
+  //         console.log("Attempting to update user with ID:", doc.id); // Debug ID
+
+  //         const existingUser = await payload.findByID({
+  //           collection: 'users',
+  //           id: doc.id,
+  //         });
+  //         console.log("Fetched User:", existingUser);
+
+  //         const updatedUser = await payload.update({
+  //           collection: 'users',
+  //           id: doc.id,
+  //           data: { verifyToken },
+  //           overrideAccess: true,
+  //         });
+  //         console.log("User updated with new token:", updatedUser);
+  //         console.log("-----after verification-----")
+  //         const verificationUrl = `https://admin.scholarbee.pk/api/verify-email/${verifyToken}`;
+  //         const mailOptions = {
+  //           from: 'basitafraz8@gmail.com',
+  //           to: doc.email,
+  //           subject: 'Verify Your Email Address',
+  //           html: `<p>Please verify your email by clicking the following link: <a href="${verificationUrl}">${verificationUrl}</a></p>`
+  //         };
+
+  //         // transporter.sendMail(mailOptions, (error, info) => {
+  //         //   if (error) {
+  //         //     console.error('Error sending mail:', error);
+  //         //   } else {
+  //         //     console.log('Email sent: %s', info.response);
+  //         //   }
+  //         // });
+  //       }
+
+  //     } catch (error) {
+  //       console.log(error)
+  //     }
+  //     return
+  //   }
+  //   ]
+  // }
 };
 
 export default Users;
