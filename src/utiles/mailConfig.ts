@@ -1,25 +1,15 @@
-// emailService.js
+import nodemailer from 'nodemailer';
+import dotenv from 'dotenv';
+dotenv.config();
+console.log(process.env.SES_SMTP_USERNAME,
+    process.env.SES_SMTP_PASSWORD, "==== in env")
 
-import sgMail from '@sendgrid/mail';
-sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-
-const sendEmail = async ({ to, subject, html }) => {
-    const msg = {
-        to,
-        from: process.env.DEFAULT_FROM_EMAIL,
-        subject,
-        html,
-    };
-
-    try {
-        await sgMail.send(msg);
-        console.log('Email sent');
-    } catch (error) {
-        console.error('Error sending email:', error);
-        if (error.response) {
-            console.error('Error response:', error.response.body);
-        }
+export const transporter = nodemailer.createTransport({
+    host: 'email-smtp.us-east-1.amazonaws.com',
+    port: 587,
+    secure: false,  // True for 465, false for other ports
+    auth: {
+        user: process.env.SES_SMTP_USERNAME,
+        pass: process.env.SES_SMTP_PASSWORD
     }
-};
-
-module.exports = sendEmail;
+});

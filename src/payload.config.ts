@@ -35,7 +35,7 @@ import FormFieldValues from './collections/FormFieldValues'
 import { cloudStorage } from '@payloadcms/plugin-cloud-storage'
 import { s3Adapter } from "@payloadcms/plugin-cloud-storage/s3";
 import AdmissionPrograms from './collections/AdmissionPrograms'
-import Applications from './collections/Applications'
+// import Applications from './collections/Applications'
 
 
 
@@ -77,7 +77,7 @@ export default buildConfig({
     Media,
     FormFields,
     FormFieldValues,
-    Applications,
+    // Applications,
     AdmissionPrograms
   ],
   typescript: {
