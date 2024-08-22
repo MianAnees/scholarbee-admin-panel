@@ -3,8 +3,8 @@ import payload from 'payload'
 import cors from 'cors'; // Import the CORS middleware
 import crypto from 'crypto';
 import { transporter } from './utiles/mailConfig';
-import bcrypt from "bcrypt"
-require('dotenv').config()
+import dotenv from 'dotenv';
+dotenv.config();
 const app = express()
 
 // Enable CORS
@@ -178,8 +178,6 @@ const start = async () => {
       res.status(500).json({ error: 'Internal server error' });
     }
   });
-
-
   app.listen(process.env.PORT || 3000)
 }
 
