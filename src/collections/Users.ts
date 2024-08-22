@@ -4,7 +4,27 @@ import { transporter } from '../utiles/mailConfig';
 
 const Users: CollectionConfig = {
   slug: 'users',
-  auth: true,
+  auth: {
+    forgotPassword: {
+      generateEmailHTML: ({ req, token, user }: any) => {
+        // Use the token provided to allow your user to reset their password
+        const resetPasswordURL = `${process.env.FRONTEND_URL}/reset-password?token=${token}`
+        return `
+        <!doctype html>
+        <html>
+          <body>
+            <h1>Here is my custom email template!</h1>
+            <p>Hello, ${user.email}!</p>
+            <p>Click below to reset your password.</p>
+            <p>
+              <a href="${resetPasswordURL}">${resetPasswordURL}</a>
+            </p>
+          </body>
+        </html>
+      `
+      },
+    },
+  },
   labels: {
     singular: 'User',
     plural: 'Users',
@@ -154,52 +174,6 @@ const Users: CollectionConfig = {
       }
     },
   ],
-  // hooks: {
-  //   afterChange: [async ({ operation, doc, req }) => {
-  //     console.log(operation, "------")
-  //     try {
-  //       if (operation === 'create' && !doc._verified) {
-  //         const verifyToken = crypto.randomBytes(20).toString('hex');
-  //         console.log("Attempting to update user with ID:", doc.id); // Debug ID
-
-  //         const existingUser = await payload.findByID({
-  //           collection: 'users',
-  //           id: doc.id,
-  //         });
-  //         console.log("Fetched User:", existingUser);
-
-  //         const updatedUser = await payload.update({
-  //           collection: 'users',
-  //           id: doc.id,
-  //           data: { verifyToken },
-  //           overrideAccess: true,
-  //         });
-  //         console.log("User updated with new token:", updatedUser);
-  //         console.log("-----after verification-----")
-  //         const verificationUrl = `https://admin.scholarbee.pk/api/verify-email/${verifyToken}`;
-  //         const mailOptions = {
-  //           from: 'basitafraz8@gmail.com',
-  //           to: doc.email,
-  //           subject: 'Verify Your Email Address',
-  //           html: `<p>Please verify your email by clicking the following link: <a href="${verificationUrl}">${verificationUrl}</a></p>`
-  //         };
-
-  //         // transporter.sendMail(mailOptions, (error, info) => {
-  //         //   if (error) {
-  //         //     console.error('Error sending mail:', error);
-  //         //   } else {
-  //         //     console.log('Email sent: %s', info.response);
-  //         //   }
-  //         // });
-  //       }
-
-  //     } catch (error) {
-  //       console.log(error)
-  //     }
-  //     return
-  //   }
-  //   ]
-  // }
 };
 
 export default Users;

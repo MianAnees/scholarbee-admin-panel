@@ -52,10 +52,9 @@ const start = async () => {
 
   app.post('/api/signup', async (req, res) => {
     const { email, password, first_name, last_name, phone_number, user_type } = req.body;
-    let userCreated = false; // Flag to track if the user was successfully created
+    let userCreated = false;
     let user: any;
     try {
-      // Check if the email already exists
       const existingUser = await payload.find({
         collection: 'users',
         where: { email: { equals: email } },
@@ -66,7 +65,6 @@ const start = async () => {
         return res.status(400).json({ error: "Email already exists." });
       }
 
-      // Create user
       user = await payload.create({
         collection: 'users',
         data: {
@@ -74,12 +72,10 @@ const start = async () => {
         },
         overrideAccess: true,
       });
-      userCreated = true; // Update flag once user is created
+      userCreated = true;
 
-      // Generate verification token
       const verifyToken = crypto.randomBytes(20).toString('hex');
 
-      // Attempt to update user with verification token (could be combined in creation step)
       await payload.update({
         collection: 'users',
         id: user.id,
@@ -87,7 +83,6 @@ const start = async () => {
         overrideAccess: true,
       });
 
-      // Prepare and send the verification email
       const verificationUrl = `${process.env.FRONTEND_URL}/verification/${verifyToken}`;
       const mailOptions: any = {
         from: 'basitafraz8@gmail.com',
@@ -96,8 +91,12 @@ const start = async () => {
         html: `<p>Please verify your email by clicking the following link: <a href="Verification Link">${verificationUrl}</a></p>`
       };
 
-      transporter.sendMail(mailOptions);
-      res.status(200).json({ user }); // Final success response
+      transporter.sendMail(mailOptions).then((res) => {
+        console.log(res)
+      }).catch((error) => {
+        console.log(error, "while sending verification email!")
+      })
+      res.status(200).json({ user });
     } catch (error) {
       res.status(500).json({ error: 'Failed to complete signup.' });
     }
@@ -108,7 +107,6 @@ const start = async () => {
     const { verifyToken } = req.params;
 
     try {
-      // Find the user with the given verification token
       const result = await payload.find({
         collection: 'users',
         where: {
@@ -120,18 +118,17 @@ const start = async () => {
       });
 
       if (!result || result.docs.length === 0) {
-        return res.status(404).json({ error: 'Verification token is invalid or expired.' });
+        return res.status(400).json({ error: 'Verification token is invalid or expired.' });
       }
 
       const user = result.docs[0];
 
-      // Update the user's verified status
       await payload.update({
         collection: 'users',
         id: user.id,
         data: {
           _verified: true,
-          verifyToken: ''  // Optionally clear the verification token
+          verifyToken: ''
         },
         overrideAccess: true
       });
@@ -174,7 +171,6 @@ const start = async () => {
       if (error.message === 'Incorrect email or password') {
         return res.status(401).json({ error: 'Invalid email or password.' });
       }
-
       res.status(500).json({ error: 'Internal server error' });
     }
   });
