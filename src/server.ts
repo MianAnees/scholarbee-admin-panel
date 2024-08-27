@@ -145,6 +145,20 @@ const start = async () => {
 
     try {
       // Use Payload's login method
+      const user = await payload.find({
+        collection: 'users',  // Replace with your actual collection slug
+        where: {
+          email: {
+            equals: email,
+          },
+        },
+      });
+
+      // If no user is found, throw an error
+      if (user.totalDocs === 0) {
+        return res.status(400).json({ error: 'Invalid email or password.' });
+      }
+
       const result = await payload.login({
         collection: 'users',  // Replace with your actual collection slug
         data: {
