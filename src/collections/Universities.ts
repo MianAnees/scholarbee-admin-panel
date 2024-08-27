@@ -11,6 +11,21 @@ const Universities: CollectionConfig = {
         useAsTitle: 'name',
         defaultColumns: ['name', 'logo_url'],
     },
+    access: {
+        // Allow public read access
+        read: () => true,
+
+        // Restrict create, update, and delete to authenticated users
+        create: ({ req: { user } }) => {
+            return !!user; // Only allow if a user is logged in
+        },
+        update: ({ req: { user } }) => {
+            return !!user; // Only allow if a user is logged in
+        },
+        delete: ({ req: { user } }) => {
+            return !!user; // Only allow if a user is logged in
+        },
+    },
     fields: [
         {
             name: 'name',

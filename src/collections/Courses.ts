@@ -6,6 +6,21 @@ const Courses: CollectionConfig = {
         singular: 'Course',
         plural: 'Courses',
     },
+    access: {
+        // Allow public read access
+        read: () => true,
+
+        // Restrict create, update, and delete to authenticated users
+        create: ({ req: { user } }) => {
+            return !!user; // Only allow if a user is logged in
+        },
+        update: ({ req: { user } }) => {
+            return !!user; // Only allow if a user is logged in
+        },
+        delete: ({ req: { user } }) => {
+            return !!user; // Only allow if a user is logged in
+        },
+    },
     admin: {
         useAsTitle: 'course_name',
     },
