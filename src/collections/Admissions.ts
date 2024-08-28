@@ -87,25 +87,25 @@ const Admissions: CollectionConfig = {
                 },
             ],
         },
-        {
-            name: 'admission_requirements',
-            type: 'array',
-            label: 'Admission Requirements',
-            fields: [
-                {
-                    name: 'key',
-                    type: 'text',
-                    label: 'Requirement Key',
-                    required: true,
-                },
-                {
-                    name: 'value',
-                    type: 'textarea',
-                    label: 'Requirement Value',
-                    required: true,
-                },
-            ],
-        },
+        // {
+        //     name: 'admission_requirements',
+        //     type: 'array',
+        //     label: 'Admission Requirements',
+        //     fields: [
+        //         {
+        //             name: 'key',
+        //             type: 'text',
+        //             label: 'Requirement Key',
+        //             required: true,
+        //         },
+        //         {
+        //             name: 'value',
+        //             type: 'textarea',
+        //             label: 'Requirement Value',
+        //             required: true,
+        //         },
+        //     ],
+        // },
         {
             name: 'created_at',
             type: 'date',
