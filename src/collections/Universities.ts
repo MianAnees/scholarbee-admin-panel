@@ -150,24 +150,11 @@ const Universities: CollectionConfig = {
         },
         {
             name: 'logo_url',
-            type: 'upload',
-            relationTo: 'media',
+            type: 'text',
             required: false,
-            label: 'Logo URL',
+            label: 'Logo Image URL',
             admin: {
-                position: 'sidebar',
-                // Uncomment and implement the Cell component if needed
-                // components: {
-                //   Cell: ({ value, data }: { value: any, data: any }) => (
-                //     value ? (
-                //       <img
-                //         src={`${process.env.PAYLOAD_PUBLIC_URL}/media/${value.filename}`}
-                //         alt={data?.name || 'University Logo'}
-                //         style={{ width: '50px', height: '50px', objectFit: 'contain' }}
-                //       />
-                //     ) : null
-                //   ),
-                // },
+                description: 'Provide the URL of the logo image stored in S3 or another storage service.',
             },
         },
         {

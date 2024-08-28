@@ -7,8 +7,7 @@ const Users: CollectionConfig = {
   auth: {
     forgotPassword: {
       generateEmailHTML: ({ req, token, user }: any) => {
-        // Use the token provided to allow your user to reset their password
-        const resetPasswordURL = `${process.env.FRONTEND_URL}/reset-password?token=${token}`
+        const resetPasswordURL = `${process.env.FRONTEND_URL}/reset-password?token=${token}`;
         return `
         <!doctype html>
         <html>
@@ -21,14 +20,13 @@ const Users: CollectionConfig = {
             </p>
           </body>
         </html>
-      `
+      `;
       },
     },
   },
   labels: {
     singular: 'User',
     plural: 'Users',
-
   },
   admin: {
     useAsTitle: 'email',
@@ -69,8 +67,12 @@ const Users: CollectionConfig = {
         description: 'Required for students',
       },
     },
-    //nationality
-    //
+    {
+      name: 'nationality',
+      type: 'text',
+      required: false,
+      label: 'Nationality/Country of Residence',
+    },
     {
       name: 'email',
       type: 'email',
@@ -84,11 +86,78 @@ const Users: CollectionConfig = {
       label: 'Phone Number',
     },
     {
+      name: 'fatherEmailAddress',
+      type: 'email',
+      required: false,
+      label: "Father's Email Address",
+    },
+    {
+      name: 'fatherPhoneNumber',
+      type: 'text',
+      required: false,
+      label: "Father's Phone Number",
+    },
+    {
+      name: 'provinceOfDomicile',
+      type: 'select',
+      required: false,
+      options: [
+        {
+          label: 'Khyber Pakhtunkhwa',
+          value: 'khyber_pakhtunkhwa',
+        },
+        {
+          label: 'Punjab',
+          value: 'punjab',
+        },
+        {
+          label: 'Sindh',
+          value: 'sindh',
+        },
+        {
+          label: 'Balochistan',
+          value: 'balochistan',
+        },
+        // Add more provinces as needed
+      ],
+      label: 'Province of Domicile',
+    },
+    {
+      name: 'districtOfDomicile',
+      type: 'text',
+      required: false,
+      label: 'District of Domicile',
+    },
+    {
+      name: 'stateOrProvince',
+      type: 'text',
+      required: false,
+      label: 'State/Province',
+    },
+    {
+      name: 'city',
+      type: 'text',
+      required: false,
+      label: 'City',
+    },
+    {
+      name: 'postalCode',
+      type: 'text',
+      required: false,
+      label: 'Postal/Zip Code',
+    },
+    {
+      name: 'streetAddress',
+      type: 'text',
+      required: false,
+      label: 'Street Address',
+    },
+    {
       name: 'address_id',
       type: 'relationship',
       relationTo: 'addresses',
       required: false,
-      label: 'Address',
+      label: 'Current Address',
     },
     {
       name: 'user_type',
@@ -142,13 +211,109 @@ const Users: CollectionConfig = {
     },
     {
       name: 'profile_image_url',
-      type: 'upload',
-      relationTo: 'media',
+      type: 'text',
       required: false,
       label: 'Profile Image URL',
       admin: {
-        description: 'Profile Image',
+        description: 'Provide the URL of the profile image stored in S3 or another storage service.',
       },
+    },
+    {
+      name: 'educational_backgrounds',
+      type: 'array',
+      label: 'Educational Backgrounds',
+      fields: [
+        {
+          name: 'education_level',
+          type: 'select',
+          options: [
+            'Matriculation',
+            'Intermediate/FSc/FA',
+            'Bachelors',
+            'Masters',
+            'PhD',
+          ],
+          required: false,
+          label: 'Education Level',
+        },
+        {
+          name: 'field_of_study',
+          type: 'text',
+          required: false,
+          label: 'Field of Study',
+        },
+        {
+          name: 'school_college_university',
+          type: 'text',
+          required: false,
+          label: 'School/College/University',
+        },
+        {
+          name: 'marks_gpa',
+          type: 'group',
+          fields: [
+            {
+              name: 'total_marks_gpa',
+              type: 'text',
+              required: false,
+              label: 'Total Marks/GPA',
+            },
+            {
+              name: 'obtained_marks_gpa',
+              type: 'text',
+              required: false,
+              label: 'Obtained Marks/GPA',
+            }
+          ],
+          label: 'Marks/GPA',
+        },
+        {
+          name: 'year_of_passing',
+          type: 'text',
+          required: false,
+          label: 'Year of Passing',
+        },
+        {
+          name: 'board',
+          type: 'text',
+          required: false,
+          label: 'Board',
+        },
+        {
+          name: 'transcript',
+          type: 'text',
+          required: false,
+          label: 'Transcript URL',
+          admin: {
+            description: 'Provide the URL of the transcript file stored in S3 or another storage service.',
+          },
+        },
+      ],
+    },
+    {
+      name: 'national_id_card',
+      type: 'group',
+      fields: [
+        {
+          name: 'front_side',
+          type: 'text',
+          required: false,
+          label: 'Front Side URL',
+          admin: {
+            description: 'Provide the URL of the front side of the National ID card stored in S3 or another storage service.',
+          },
+        },
+        {
+          name: 'back_side',
+          type: 'text',
+          required: false,
+          label: 'Back Side URL',
+          admin: {
+            description: 'Provide the URL of the back side of the National ID card stored in S3 or another storage service.',
+          },
+        },
+      ],
+      label: 'National ID Card',
     },
     {
       name: 'created_at',
@@ -170,8 +335,8 @@ const Users: CollectionConfig = {
       type: 'checkbox',
       defaultValue: false,
       admin: {
-        readOnly: true
-      }
+        readOnly: true,
+      },
     },
   ],
 };
