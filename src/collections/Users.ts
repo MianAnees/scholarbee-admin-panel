@@ -54,6 +54,96 @@ const Users: CollectionConfig = {
       },
     },
     {
+      name: 'father_name',
+      type: 'text',
+      required: true,
+      label: "Father's Name",
+    },
+    {
+      name: 'father_profession',
+      type: 'text',
+      required: false,
+      label: "Father's Profession",
+    },
+    {
+      name: 'father_status',
+      type: 'select',
+      required: true,
+      options: [
+        {
+          label: 'Alive',
+          value: 'alive',
+        },
+        {
+          label: 'Deceased',
+          value: 'deceased',
+        },
+      ],
+      label: "Father's Status",
+    },
+    {
+      name: 'father_income',
+      type: 'text',
+      required: false,
+      label: "Father's Income",
+    },
+    {
+      name: 'mother_name',
+      type: 'text',
+      required: false,
+      label: "Mother's Name",
+    },
+    {
+      name: 'mother_profession',
+      type: 'text',
+      required: false,
+      label: "Mother's Profession",
+    },
+    {
+      name: 'mother_status',
+      type: 'select',
+      required: false,
+      options: [
+        {
+          label: 'Alive',
+          value: 'alive',
+        },
+        {
+          label: 'Deceased',
+          value: 'deceased',
+        },
+      ],
+      label: "Mother's Status",
+    },
+    {
+      name: 'mother_income',
+      type: 'text',
+      required: false,
+      label: "Mother's Income",
+    },
+    {
+      name: 'religion',
+      type: 'text',
+      required: false,
+      label: 'Religion',
+    },
+    {
+      name: 'special_person',
+      type: 'select',
+      required: true,
+      options: [
+        {
+          label: 'Yes',
+          value: 'yes',
+        },
+        {
+          label: 'No',
+          value: 'no',
+        },
+      ],
+      label: 'Are You a Special Person?',
+    },
+    {
       name: 'gender',
       type: 'select',
       options: [
