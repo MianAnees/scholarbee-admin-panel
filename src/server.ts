@@ -88,7 +88,7 @@ const start = async () => {
         from: 'basitafraz8@gmail.com',
         to: user.email,
         subject: 'Verify Your Email Address',
-        html: `<p>Please verify your email by clicking the following link: <a href="Verification Link">${verificationUrl}</a></p>`
+        html: `<p>Please verify your email by clicking the following link: <a href=${verificationUrl}>Verification Link</a></p>`
       };
 
       transporter.sendMail(mailOptions).then((res) => {
