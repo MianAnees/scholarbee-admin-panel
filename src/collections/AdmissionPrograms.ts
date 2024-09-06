@@ -1,7 +1,7 @@
 import { CollectionConfig } from 'payload/types';
 
 const AdmissionPrograms: CollectionConfig = {
-    slug: 'admission-programs',
+    slug: 'admission_programs',
     access: {
         // Allow public read access
         read: () => true,
