@@ -37,6 +37,12 @@ const AdmissionPrograms: CollectionConfig = {
             label: 'Program',
         },
         {
+            name: 'admission_fee',
+            type: 'text',
+            required: false,
+            label: 'Fee',
+        },
+        {
             name: 'admission_requirements',
             type: 'array',
             label: 'Admission Requirements',
