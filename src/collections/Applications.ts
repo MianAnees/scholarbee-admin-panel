@@ -29,9 +29,9 @@ const Applications: CollectionConfig = {
             label: 'Program',
         },
         {
-            name: 'admission-programs',
+            name: 'admission_programs',
             type: 'relationship',
-            relationTo: 'admission-programs',
+            relationTo: 'admission_programs',
             required: true,
             label: 'Admission Programs',
         },
