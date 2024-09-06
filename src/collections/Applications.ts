@@ -29,12 +29,19 @@ const Applications: CollectionConfig = {
             label: 'Program',
         },
         {
-            name: 'form_response',
+            name: 'admission-programs',
             type: 'relationship',
-            relationTo: 'form_responses',
+            relationTo: 'admission-programs',
             required: true,
-            label: 'Form Response',
+            label: 'Admission Programs',
         },
+        // {
+        //     name: 'form_response',
+        //     type: 'relationship',
+        //     relationTo: 'form_responses',
+        //     required: true,
+        //     label: 'Form Response',
+        // },
         {
             name: 'submission_date',
             type: 'date',
