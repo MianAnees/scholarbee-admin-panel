@@ -10,16 +10,6 @@ const AcademicDepartments: CollectionConfig = {
         useAsTitle: 'name',
     },
     fields: [
-        // {
-        //     name: 'slug',
-        //     type: 'text',
-        //     required: true,
-        //     label: 'Slug',
-        //     unique: true,
-        //     admin: {
-        //         readOnly: true,
-        //     },
-        // },
         {
             name: 'campus_id',
             type: 'relationship',
