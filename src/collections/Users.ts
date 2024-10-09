@@ -5,6 +5,7 @@ import { transporter } from '../utiles/mailConfig';
 const Users: CollectionConfig = {
   slug: 'users',
   auth: {
+    tokenExpiration: 604800,
     forgotPassword: {
       generateEmailHTML: ({ req, token, user }: any) => {
         const resetPasswordURL = `${process.env.FRONTEND_URL}/reset-password?token=${token}`;
