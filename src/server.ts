@@ -140,6 +140,217 @@ const start = async () => {
     }
   });
 
+  // ******************* Filter based admission programs **********************
+
+  app.get('/api/admission-programs-with-filters', async (req, res) => {
+    const { major, fee, year, intake, programName, university, studyLevel, courseForm, campusId, page = 1, limit = 10 } = req.query;
+    console.log(major, fee, year, intake, programName, university, studyLevel, courseForm, campusId, "----- in aggregation ----");
+
+    try {
+      const pipeline: any[] = [];
+      const pageNum = parseInt(page as string, 10) || 1;
+      const limitNum = parseInt(limit as string, 10) || 10;
+      const skip = (pageNum - 1) * limitNum;
+
+      // Lookup for Admissions
+      pipeline.push({
+        $lookup: {
+          from: 'admissions',
+          let: { admissionId: '$admission' }, // Assuming admission is a string
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $eq: ['$_id', { $toObjectId: '$$admissionId' }],
+                },
+              },
+            },
+          ],
+          as: 'admission',
+        },
+      });
+      pipeline.push({ $unwind: '$admission' });
+
+      // Lookup for Programs
+      pipeline.push({
+        $lookup: {
+          from: 'programs',
+          let: { programId: '$program' }, // Assuming program is a string
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $eq: ['$_id', { $toObjectId: '$$programId' }],
+                },
+              },
+            },
+          ],
+          as: 'program',
+        },
+      });
+      pipeline.push({ $unwind: '$program' });
+
+      // Lookup for Fee Structures
+      pipeline.push({
+        $lookup: {
+          from: 'fee_structures',
+          let: { programId: '$program._id' },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $eq: [
+                    {
+                      $toObjectId: "$program_id", // Convert program_id to ObjectId
+                    },
+                    "$$programId", // Compare to ObjectId from the previous stage
+                  ],
+                },
+              },
+            },
+          ],
+          as: 'fee_structure',
+        },
+      });
+      pipeline.push({
+        $unwind: {
+          path: '$fee_structure',
+          preserveNullAndEmptyArrays: true, // Allow programs without fee structures
+        },
+      });
+
+      // Apply filters only if they are provided in the query
+
+      // Filter by Major
+      if (major) {
+        pipeline.push({
+          $match: {
+            'program.name': { $regex: major, $options: 'i' },
+          },
+        });
+      }
+
+      // Search based on Program Name
+      if (programName) {
+        pipeline.push({
+          $match: {
+            'program.name': { $regex: programName, $options: 'i' }, // Case-insensitive search
+          },
+        });
+      }
+
+      // Filter by University ID
+      if (university) {
+        pipeline.push({
+          $match: {
+            'admission.university_id': { $eq: university }, // Match by university ID
+          },
+        });
+      }
+
+      // Filter by Campus ID
+      if (campusId) {
+        pipeline.push({
+          $match: {
+            'program.campus_id': { $eq: campusId }, // Match by campus ID
+          },
+        });
+      }
+
+      // Filter by Year
+      if (year) {
+        pipeline.push({
+          $match: {
+            'admission.admission_startdate': {
+              $gte: new Date(`${year}-01-01`),
+              $lt: new Date(`${year}-12-31`),
+            },
+          },
+        });
+      }
+
+      // Filter by Intake Period
+      if (intake) {
+        pipeline.push({
+          $match: {
+            'program.intake_periods.intake_period': { $regex: intake, $options: 'i' },
+          },
+        });
+      }
+
+      // Filter by Study Level
+      if (studyLevel) {
+        pipeline.push({
+          $match: {
+            'program.degree_level': { $regex: studyLevel, $options: 'i' },
+          },
+        });
+      }
+
+      // Filter by Course Form
+      if (courseForm) {
+        pipeline.push({
+          $match: {
+            'program.mode_of_study': { $regex: courseForm, $options: 'i' },
+          },
+        });
+      }
+
+      // Apply fee filtering only if 'fee' query parameter is provided
+      if (fee) {
+        const [minFee, maxFee] = (fee as string).split('-').map(Number);
+        pipeline.push({
+          $match: {
+            'fee_structure.tuition_fee': { $gte: minFee, $lte: maxFee },
+          },
+        });
+      }
+
+      // Pagination
+      pipeline.push({
+        $facet: {
+          docs: [
+            { $skip: skip },
+            { $limit: limitNum },
+          ],
+          totalCount: [
+            { $count: 'count' },
+          ],
+        },
+      });
+
+
+      // Execute the aggregation pipeline
+      const result = await payload.db.collections['admission_programs'].aggregate(pipeline)
+
+      const docs = result[0].docs;
+      const totalCount = result[0].totalCount.length > 0 ? result[0].totalCount[0].count : 0;
+      const totalPages = Math.ceil(totalCount / limitNum);
+
+      const pagination = {
+        totalDocs: totalCount,
+        limit: limitNum,
+        totalPages,
+        page: pageNum,
+        pagingCounter: skip + 1,
+        hasPrevPage: pageNum > 1,
+        hasNextPage: pageNum < totalPages,
+        prevPage: pageNum > 1 ? pageNum - 1 : null,
+        nextPage: pageNum < totalPages ? pageNum + 1 : null,
+      };
+
+      res.status(200).json({ docs, pagination });
+    } catch (error) {
+      console.error('Error fetching admission programs:', error);
+      res.status(500).json({ error: 'Failed to fetch admission programs.' });
+    }
+  });
+
+
+
+
+
+
   app.post('/api/login', async (req, res) => {
     const { email, password } = req.body;
 
