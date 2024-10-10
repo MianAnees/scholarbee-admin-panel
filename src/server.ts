@@ -156,7 +156,7 @@ const start = async () => {
       pipeline.push({
         $lookup: {
           from: 'admissions',
-          let: { admissionId: '$admission' }, // Assuming admission is a string
+          let: { admissionId: '$admission' },
           pipeline: [
             {
               $match: {
@@ -175,7 +175,7 @@ const start = async () => {
       pipeline.push({
         $lookup: {
           from: 'programs',
-          let: { programId: '$program' }, // Assuming program is a string
+          let: { programId: '$program' },
           pipeline: [
             {
               $match: {
@@ -190,7 +190,7 @@ const start = async () => {
       });
       pipeline.push({ $unwind: '$program' });
 
-      // Lookup for Fee Structures
+      // Lookup for Fee Structures (append as array)
       pipeline.push({
         $lookup: {
           from: 'fee_structures',
@@ -201,21 +201,15 @@ const start = async () => {
                 $expr: {
                   $eq: [
                     {
-                      $toObjectId: "$program_id", // Convert program_id to ObjectId
+                      $toObjectId: '$program_id', // Convert program_id to ObjectId
                     },
-                    "$$programId", // Compare to ObjectId from the previous stage
+                    '$$programId', // Compare to ObjectId from the previous stage
                   ],
                 },
               },
             },
           ],
-          as: 'fee_structure',
-        },
-      });
-      pipeline.push({
-        $unwind: {
-          path: '$fee_structure',
-          preserveNullAndEmptyArrays: true, // Allow programs without fee structures
+          as: 'fee_structures', // Store as an array
         },
       });
 
@@ -234,7 +228,7 @@ const start = async () => {
       if (programName) {
         pipeline.push({
           $match: {
-            'program.name': { $regex: programName, $options: 'i' }, // Case-insensitive search
+            'program.name': { $regex: programName, $options: 'i' },
           },
         });
       }
@@ -243,7 +237,7 @@ const start = async () => {
       if (university) {
         pipeline.push({
           $match: {
-            'admission.university_id': { $eq: university }, // Match by university ID
+            'admission.university_id': { $eq: university },
           },
         });
       }
@@ -252,7 +246,7 @@ const start = async () => {
       if (campusId) {
         pipeline.push({
           $match: {
-            'program.campus_id': { $eq: campusId }, // Match by campus ID
+            'program.campus_id': { $eq: campusId },
           },
         });
       }
@@ -301,7 +295,7 @@ const start = async () => {
         const [minFee, maxFee] = (fee as string).split('-').map(Number);
         pipeline.push({
           $match: {
-            'fee_structure.tuition_fee': { $gte: minFee, $lte: maxFee },
+            'fee_structures.tuition_fee': { $gte: minFee, $lte: maxFee },
           },
         });
       }
@@ -318,7 +312,6 @@ const start = async () => {
           ],
         },
       });
-
 
       // Execute the aggregation pipeline
       const result = await payload.db.collections['admission_programs'].aggregate(pipeline)
@@ -345,7 +338,6 @@ const start = async () => {
       res.status(500).json({ error: 'Failed to fetch admission programs.' });
     }
   });
-
 
 
 
