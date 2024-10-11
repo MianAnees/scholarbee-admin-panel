@@ -57,7 +57,7 @@ const Users: CollectionConfig = {
     {
       name: 'father_name',
       type: 'text',
-      required: true,
+      required: false,
       label: "Father's Name",
     },
     {
@@ -69,7 +69,7 @@ const Users: CollectionConfig = {
     {
       name: 'father_status',
       type: 'select',
-      required: true,
+      required: false,
       options: [
         {
           label: 'Alive',
@@ -131,7 +131,7 @@ const Users: CollectionConfig = {
     {
       name: 'special_person',
       type: 'select',
-      required: true,
+      required: false,
       options: [
         {
           label: 'Yes',
