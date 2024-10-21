@@ -185,10 +185,28 @@ const start = async () => {
                 },
               },
             },
+            {
+              $lookup: {
+                from: 'academic_departments',  // Lookup into the academic_departments collection
+                let: { academicDepartmentId: '$academic_departments' }, // Use the academic_departments field from the program
+                pipeline: [
+                  {
+                    $match: {
+                      $expr: {
+                        $eq: ['$_id', { $toObjectId: '$$academicDepartmentId' }],
+                      },
+                    },
+                  },
+                ],
+                as: 'academic_departments',  // Output as academic_departments field
+              },
+            },
+            { $unwind: { path: '$academic_departments', preserveNullAndEmptyArrays: true } }, // Unwind if necessary
           ],
           as: 'program',
         },
       });
+
       pipeline.push({ $unwind: '$program' });
 
       // Lookup for Fee Structures (append as array)
