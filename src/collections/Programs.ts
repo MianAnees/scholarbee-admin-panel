@@ -33,12 +33,13 @@ const Programs: CollectionConfig = {
             label: 'Campus',
         },
         {
-            name: 'academic_departments_id',
+            name: 'academic_departments',
             type: 'relationship',
             relationTo: 'academic_departments',
             required: false,
             label: 'Academic Departments',
-        },
+        }
+        ,
         {
             name: 'name',
             type: 'text',
