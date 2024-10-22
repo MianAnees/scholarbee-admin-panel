@@ -4,6 +4,7 @@ import cors from 'cors'; // Import the CORS middleware
 import crypto from 'crypto';
 import { transporter } from './utiles/mailConfig';
 import dotenv from 'dotenv';
+// import router from './customRoutes/routes';
 dotenv.config();
 const app = express()
 

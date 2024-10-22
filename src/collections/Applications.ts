@@ -1,5 +1,7 @@
 import { CollectionConfig } from 'payload/types';
 
+
+
 const Applications: CollectionConfig = {
     slug: 'applications',
     labels: {
@@ -15,33 +17,54 @@ const Applications: CollectionConfig = {
             label: 'Applicant',
         },
         {
-            name: 'admission',
-            type: 'relationship',
-            relationTo: 'admissions',
-            required: true,
-            label: 'Admission',
+            name: 'departments',
+            type: 'array', // An array to store multiple department applications
+            label: 'Departments',
+            fields: [
+                {
+                    name: 'department',
+                    type: 'relationship',
+                    relationTo: 'academic_departments', // Assuming you have a departments collection
+                    required: true,
+                    label: 'Department',
+                },
+                {
+                    name: 'preferences',
+                    type: 'array',
+                    label: 'Program Preferences',
+                    minRows: 1,
+                    maxRows: 3, // Limit to 3 preferences
+                    fields: [
+                        {
+                            name: 'program',
+                            type: 'relationship',
+                            relationTo: 'programs', // Assuming a programs collection
+                            required: true,
+                            label: 'Program',
+                        },
+                        {
+                            name: 'preference_order',
+                            type: 'select',
+                            options: ['1st', '2nd', '3rd'],
+                            required: true,
+                            label: 'Preference Order',
+                        },
+                    ],
+                },
+                {
+                    name: 'processing_fee',
+                    type: 'number',
+                    required: true,
+                    label: 'Processing Fee',
+                },
+            ],
         },
         {
-            name: 'program',
-            type: 'relationship',
-            relationTo: 'programs',
+            name: 'total_processing_fee',
+            type: 'number',
             required: true,
-            label: 'Program',
+            label: 'Total Processing Fee',
         },
-        {
-            name: 'admission_programs',
-            type: 'relationship',
-            relationTo: 'admission_programs',
-            required: true,
-            label: 'Admission Programs',
-        },
-        // {
-        //     name: 'form_response',
-        //     type: 'relationship',
-        //     relationTo: 'form_responses',
-        //     required: true,
-        //     label: 'Form Response',
-        // },
         {
             name: 'submission_date',
             type: 'date',
@@ -54,11 +77,7 @@ const Applications: CollectionConfig = {
         {
             name: 'status',
             type: 'select',
-            options: [
-                'Pending',
-                'Approved',
-                'Rejected',
-            ],
+            options: ['Pending', 'Approved', 'Rejected'],
             required: true,
             label: 'Status',
         },
