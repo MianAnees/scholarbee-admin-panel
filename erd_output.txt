@@ -32,21 +32,40 @@ Table administrative_offices {
   created_at date
 }
 
+Table admission_programs {
+  id int [pk, increment]
+  admission_id int [ref: > admissions.id]
+  program_id int [ref: > programs.id]
+  admission_fee text
+  admission_requirements array
+  created_at date
+}
+
 Table admissions {
   id int [pk, increment]
   university_id_id int [ref: > universities.id]
-  program_id_id int [ref: > programs.id]
-  course_id_id int [ref: > courses.id]
-  admin_id_id int [ref: > users.id]
+  campus_id_id int [ref: > campuses.id]
   admission_title text
+  available_seats number
   admission_description textarea
   admission_deadline date
+  admission_startdate date
+  admission_announcements array
   created_at date
+}
+
+Table applications {
+  id int [pk, increment]
+  applicant_id int [ref: > users.id]
+  admission_id int [ref: > admissions.id]
+  program_id int [ref: > programs.id]
+  admission_programs_id int [ref: > admission_programs.id]
+  submission_date date
+  status select
 }
 
 Table campuses {
   id int [pk, increment]
-  _id text
   university_id_id int [ref: > universities.id]
   name text
   address_id_id int [ref: > addresses.id]
@@ -123,10 +142,26 @@ Table fee_structures {
   created_at date
 }
 
+Table form_field_values {
+  id int [pk, increment]
+  form_response_id int [ref: > form_responses.id]
+  field_id int [ref: > form_fields.id]
+  value text
+}
+
+Table form_fields {
+  id int [pk, increment]
+  form_id int [ref: > forms.id]
+  label text
+  type select
+  required checkbox
+  options array
+}
+
 Table form_responses {
   id int [pk, increment]
-  form_id_id int [ref: > forms.id]
-  responses array
+  form_id int [ref: > forms.id]
+  applicant_id int [ref: > users.id]
   submitted_at date
 }
 
@@ -134,7 +169,7 @@ Table forms {
   id int [pk, increment]
   title text
   description textarea
-  fields array
+  fields_id int [ref: > form_fields.id]
   created_at date
 }
 
@@ -182,12 +217,24 @@ Table messages {
   timestamp date
 }
 
+Table payments {
+  id int [pk, increment]
+  applicationId_id int [ref: > applications.id]
+  bankName text
+  depositDate date
+  depositAmount text
+  branchAddress text
+  feeInvoiceUrl text
+  paymentVerified checkbox
+  createdAt date
+}
+
 Table programs {
   id int [pk, increment]
   campus_id_id int [ref: > campuses.id]
+  academic_departments_id int [ref: > academic_departments.id]
   name text
   major text
-  fee_structure_id_id int [ref: > fee_structures.id]
   duration text
   degree_level text
   accreditations textarea
@@ -263,7 +310,6 @@ Table transportation_options {
 
 Table universities {
   id int [pk, increment]
-  _id text
   name text
   founded date
   description textarea
@@ -278,13 +324,13 @@ Table universities {
   total_students number
   total_faculty number
   total_alumni number
-  endowment number
-  campus_size number
+  endowment text
+  campus_size text
   annual_budget number
   research_output number
   international_students number
   languages textarea
-  logo_url upload
+  logo_url text
   accreditations textarea
   notable_alumni textarea
   created_at date
@@ -297,28 +343,44 @@ Table user_profiles {
   created_at date
 }
 
-Table user_requests {
-  id int [pk, increment]
-  admission_id_id int [ref: > admissions.id]
-  request_attachments textarea
-  created_at date
-}
-
 Table users {
   id int [pk, increment]
   first_name text
   last_name text
   date_of_birth date
+  father_name text
+  father_profession text
+  father_status select
+  father_income text
+  mother_name text
+  mother_profession text
+  mother_status select
+  mother_income text
+  religion text
+  special_person select
   gender select
+  nationality text
   email email
   phone_number text
+  fatherEmailAddress email
+  fatherPhoneNumber text
+  provinceOfDomicile select
+  districtOfDomicile text
+  stateOrProvince text
+  city text
+  postalCode text
+  streetAddress text
   address_id_id int [ref: > addresses.id]
   user_type select
   registration_no text
   university_id_id int [ref: > universities.id]
   campus_id_id int [ref: > campuses.id]
   user_profile_id_id int [ref: > user_profiles.id]
-  profile_image_url upload
+  profile_image_url text
+  educational_backgrounds array
+  national_id_card group
   created_at date
+  verifyToken text
+  _verified checkbox
 }
 

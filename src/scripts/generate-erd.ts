@@ -4,7 +4,7 @@
 
 export const generateERD = () => {
     // const collectionsDir = path.join(__dirname, '../collections'); // Adjust the path as necessary
-    console.log("---- in dir of collections----");
+    // console.log("---- in dir of collections----");
     // const files = fs.readdirSync(collectionsDir);
 
     // let output = '';
