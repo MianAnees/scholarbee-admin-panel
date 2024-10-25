@@ -37,6 +37,7 @@ import { s3Adapter } from "@payloadcms/plugin-cloud-storage/s3";
 import AdmissionPrograms from './collections/AdmissionPrograms'
 import Applications from './collections/Applications'
 import Payments from './collections/Payments'
+import ContactUs from './collections/ContactUs'
 // import Applications from './collections/Applications'
 
 
@@ -81,7 +82,8 @@ export default buildConfig({
     FormFieldValues,
     Applications,
     AdmissionPrograms,
-    Payments
+    Payments,
+    ContactUs
   ],
   typescript: {
     outputFile: path.resolve(__dirname, 'payload-types.ts'),
