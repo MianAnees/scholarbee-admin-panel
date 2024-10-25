@@ -6,6 +6,12 @@ const ContactUs: CollectionConfig = {
         singular: 'Contact Us',
         plural: 'Contact Us',
     },
+    auth: false, // Disable authentication for this collection
+    access: {
+        // Public access to read and create
+        read: () => true,  // Allow public read access (if needed, otherwise you can restrict it)
+        create: () => true,  // Allow public creation of contact entries
+    },
     fields: [
         {
             name: 'type',
