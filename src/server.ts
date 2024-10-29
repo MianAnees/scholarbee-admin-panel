@@ -4,6 +4,8 @@ import cors from 'cors'; // Import the CORS middleware
 import crypto from 'crypto';
 import { transporter } from './utiles/mailConfig';
 import dotenv from 'dotenv';
+import { ObjectId } from 'mongodb';
+
 // import router from './customRoutes/routes';
 dotenv.config();
 const app = express()
@@ -145,11 +147,108 @@ const start = async () => {
   // ******************* Filter based admission programs **********************
 
   app.get('/api/admission-programs-with-filters', async (req, res) => {
-    const { major, fee, year, intake, programName, university, studyLevel, courseForm, campusId, page = 1, limit = 10 } = req.query;
-    console.log(major, fee, year, intake, programName, university, studyLevel, courseForm, campusId, "----- in aggregation ----");
+    const { _id, major, fee, year, intake, programName, university, studyLevel, courseForm, campusId, page = 1, limit = 10 } = req.query;
+    console.log(_id, major, fee, year, intake, programName, university, studyLevel, courseForm, campusId, "----- in aggregation ----");
 
     try {
-      const pipeline: any[] = [];
+      const pipeline = [];
+
+      // Check if _id is present in query params
+      if (_id) {
+
+        pipeline.push({
+          $match: {
+            _id: { $eq: new ObjectId(_id.toString()) }, // Ensure proper conversion to ObjectId
+          },
+        });
+
+
+        // Add lookups as before for a single record
+        pipeline.push({
+          $lookup: {
+            from: 'admissions',
+            let: { admissionId: '$admission' },
+            pipeline: [
+              {
+                $match: {
+                  $expr: {
+                    $eq: ['$_id', { $toObjectId: '$$admissionId' }],
+                  },
+                },
+              },
+            ],
+            as: 'admission',
+          },
+        });
+        pipeline.push({ $unwind: '$admission' });
+
+        pipeline.push({
+          $lookup: {
+            from: 'programs',
+            let: { programId: '$program' },
+            pipeline: [
+              {
+                $match: {
+                  $expr: {
+                    $eq: ['$_id', { $toObjectId: '$$programId' }],
+                  },
+                },
+              },
+              {
+                $lookup: {
+                  from: 'academic_departments',
+                  let: { academicDepartmentId: '$academic_departments' },
+                  pipeline: [
+                    {
+                      $match: {
+                        $expr: {
+                          $eq: ['$_id', { $toObjectId: '$$academicDepartmentId' }],
+                        },
+                      },
+                    },
+                  ],
+                  as: 'academic_departments',
+                },
+              },
+              { $unwind: { path: '$academic_departments', preserveNullAndEmptyArrays: true } },
+            ],
+            as: 'program',
+          },
+        });
+
+        pipeline.push({ $unwind: '$program' });
+
+        pipeline.push({
+          $lookup: {
+            from: 'fee_structures',
+            let: { programId: '$program._id' },
+            pipeline: [
+              {
+                $match: {
+                  $expr: {
+                    $eq: [{ $toObjectId: '$program_id' }, '$$programId'],
+                  },
+                },
+              },
+            ],
+            as: 'fee_structures',
+          },
+        });
+
+        // Execute the aggregation pipeline for single record
+        const result = await payload.db.collections['admission_programs'].aggregate(pipeline);
+
+        // Check if a document was found
+        if (result.length > 0) {
+          res.status(200).json({ doc: result[0] });
+        } else {
+          res.status(404).json({ error: 'Record not found.' });
+        }
+
+        return;  // Return after processing single record
+      }
+
+      // Continue with normal logic if no _id is provided (pagination, filtering, etc.)
       const pageNum = parseInt(page as string, 10) || 1;
       const limitNum = parseInt(limit as string, 10) || 10;
       const skip = (pageNum - 1) * limitNum;
@@ -188,8 +287,8 @@ const start = async () => {
             },
             {
               $lookup: {
-                from: 'academic_departments',  // Lookup into the academic_departments collection
-                let: { academicDepartmentId: '$academic_departments' }, // Use the academic_departments field from the program
+                from: 'academic_departments',
+                let: { academicDepartmentId: '$academic_departments' },
                 pipeline: [
                   {
                     $match: {
@@ -199,10 +298,10 @@ const start = async () => {
                     },
                   },
                 ],
-                as: 'academic_departments',  // Output as academic_departments field
+                as: 'academic_departments',
               },
             },
-            { $unwind: { path: '$academic_departments', preserveNullAndEmptyArrays: true } }, // Unwind if necessary
+            { $unwind: { path: '$academic_departments', preserveNullAndEmptyArrays: true } },
           ],
           as: 'program',
         },
@@ -219,23 +318,16 @@ const start = async () => {
             {
               $match: {
                 $expr: {
-                  $eq: [
-                    {
-                      $toObjectId: '$program_id', // Convert program_id to ObjectId
-                    },
-                    '$$programId', // Compare to ObjectId from the previous stage
-                  ],
+                  $eq: [{ $toObjectId: '$program_id' }, '$$programId'],
                 },
               },
             },
           ],
-          as: 'fee_structures', // Store as an array
+          as: 'fee_structures',
         },
       });
 
-      // Apply filters only if they are provided in the query
-
-      // Filter by Major
+      // Apply filters and pagination only if _id is not present
       if (major) {
         pipeline.push({
           $match: {
@@ -243,8 +335,6 @@ const start = async () => {
           },
         });
       }
-
-      // Search based on Program Name
       if (programName) {
         pipeline.push({
           $match: {
@@ -252,8 +342,6 @@ const start = async () => {
           },
         });
       }
-
-      // Filter by University ID
       if (university) {
         pipeline.push({
           $match: {
@@ -261,8 +349,6 @@ const start = async () => {
           },
         });
       }
-
-      // Filter by Campus ID
       if (campusId) {
         pipeline.push({
           $match: {
@@ -270,8 +356,6 @@ const start = async () => {
           },
         });
       }
-
-      // Filter by Year
       if (year) {
         pipeline.push({
           $match: {
@@ -282,8 +366,6 @@ const start = async () => {
           },
         });
       }
-
-      // Filter by Intake Period
       if (intake) {
         pipeline.push({
           $match: {
@@ -291,8 +373,6 @@ const start = async () => {
           },
         });
       }
-
-      // Filter by Study Level
       if (studyLevel) {
         pipeline.push({
           $match: {
@@ -300,8 +380,6 @@ const start = async () => {
           },
         });
       }
-
-      // Filter by Course Form
       if (courseForm) {
         pipeline.push({
           $match: {
@@ -309,8 +387,6 @@ const start = async () => {
           },
         });
       }
-
-      // Apply fee filtering only if 'fee' query parameter is provided
       if (fee) {
         const [minFee, maxFee] = (fee as string).split('-').map(Number);
         pipeline.push({
@@ -334,8 +410,7 @@ const start = async () => {
       });
 
       // Execute the aggregation pipeline
-      const result = await payload.db.collections['admission_programs'].aggregate(pipeline)
-
+      const result = await payload.db.collections['admission_programs'].aggregate(pipeline);
       const docs = result[0].docs;
       const totalCount = result[0].totalCount.length > 0 ? result[0].totalCount[0].count : 0;
       const totalPages = Math.ceil(totalCount / limitNum);
@@ -358,6 +433,8 @@ const start = async () => {
       res.status(500).json({ error: 'Failed to fetch admission programs.' });
     }
   });
+
+
 
 
 
