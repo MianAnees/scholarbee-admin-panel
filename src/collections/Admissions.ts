@@ -87,6 +87,15 @@ const Admissions: CollectionConfig = {
                 },
             ],
         },
+        {
+            name: 'poster',
+            type: 'text',
+            required: false,
+            label: 'Poster Image URL',
+            admin: {
+                description: 'Provide the URL of the poster image stored in S3 or another storage service.',
+            },
+        },
         // {
         //     name: 'admission_requirements',
         //     type: 'array',

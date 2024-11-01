@@ -257,20 +257,76 @@ const start = async () => {
       pipeline.push({
         $lookup: {
           from: 'admissions',
-          let: { admissionId: '$admission' },
+          let: { admissionId: { $toObjectId: '$admission' } }, // Convert string to ObjectId
           pipeline: [
             {
               $match: {
                 $expr: {
-                  $eq: ['$_id', { $toObjectId: '$$admissionId' }],
+                  $eq: ['$_id', '$$admissionId'],
                 },
               },
             },
+            // Lookup for University in Admissions
+            {
+              $lookup: {
+                from: 'universities',
+                let: { universityId: { $toObjectId: '$university_id' } }, // Convert string to ObjectId
+                pipeline: [
+                  {
+                    $match: {
+                      $expr: {
+                        $eq: ['$_id', '$$universityId'],
+                      },
+                    },
+                  },
+                ],
+                as: 'university',
+              },
+            },
+            { $unwind: { path: '$university', preserveNullAndEmptyArrays: true } },
+
+            // Lookup for Campus in Admissions
+            {
+              $lookup: {
+                from: 'campuses',
+                let: { campusId: { $toObjectId: '$campus_id' } }, // Convert string to ObjectId
+                pipeline: [
+                  {
+                    $match: {
+                      $expr: {
+                        $eq: ['$_id', '$$campusId'],
+                      },
+                    },
+                  },
+                  // Lookup for Address in Campus
+                  {
+                    $lookup: {
+                      from: 'addresses',
+                      let: { addressId: { $toObjectId: '$address_id' } }, // Convert string to ObjectId
+                      pipeline: [
+                        {
+                          $match: {
+                            $expr: {
+                              $eq: ['$_id', '$$addressId'],
+                            },
+                          },
+                        },
+                      ],
+                      as: 'address',
+                    },
+                  },
+                  { $unwind: { path: '$address', preserveNullAndEmptyArrays: true } },
+                ],
+                as: 'campus',
+              },
+            },
+            { $unwind: { path: '$campus', preserveNullAndEmptyArrays: true } },
           ],
           as: 'admission',
         },
       });
       pipeline.push({ $unwind: '$admission' });
+
 
       // Lookup for Programs
       pipeline.push({

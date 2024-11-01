@@ -49,6 +49,28 @@ const ContactUs: CollectionConfig = {
             label: 'Email Address',
         },
         {
+            name: 'phone',
+            type: 'text',
+            required: false,
+            label: 'Phone Number',
+        },
+        {
+            name: 'name',
+            type: 'text',
+            required: false,
+            label: 'Full Name',
+        },
+        {
+            name: 'user_type',
+            type: 'select',
+            options: [
+                'Student',
+                'Admin',
+            ],
+            required: true,
+            label: 'User Type',
+        },
+        {
             name: 'message',
             type: 'textarea',
             required: false,
