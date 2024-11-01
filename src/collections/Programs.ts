@@ -59,6 +59,12 @@ const Programs: CollectionConfig = {
             label: 'Duration',
         },
         {
+            name: 'credit_hours',
+            type: 'number',
+            required: false,
+            label: 'Credit hours',
+        },
+        {
             name: 'degree_level',
             type: 'text',
             required: false,

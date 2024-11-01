@@ -55,7 +55,7 @@ const AdmissionPrograms: CollectionConfig = {
                 },
                 {
                     name: 'value',
-                    type: 'textarea',
+                    type: 'richText', // Changed to richText
                     label: 'Requirement Value',
                     required: true,
                 },

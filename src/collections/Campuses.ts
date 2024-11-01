@@ -160,6 +160,15 @@ const Campuses: CollectionConfig = {
             label: 'Security Features',
         },
         {
+            name: 'logo_url',
+            type: 'text',
+            required: false,
+            label: 'Logo Image URL',
+            admin: {
+                description: 'Provide the URL of the logo image stored in S3 or another storage service.',
+            },
+        },
+        {
             name: 'created_at',
             type: 'date',
             admin: {
