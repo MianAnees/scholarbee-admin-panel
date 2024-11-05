@@ -71,6 +71,29 @@ const ContactUs: CollectionConfig = {
             label: 'User Type',
         },
         {
+            name: 'study_level',
+            type: 'select',
+            options: [
+                'Bachelor',
+                'Master',
+                'Phd',
+            ],
+            required: true,
+            label: 'Study Type',
+        },
+        {
+            name: 'country',
+            type: 'text',
+            required: false,
+            label: 'Country',
+        },
+        {
+            name: 'scholarship',
+            type: 'checkbox',
+            defaultValue: false,
+            label: 'Scholarships',
+        },
+        {
             name: 'message',
             type: 'textarea',
             required: false,
