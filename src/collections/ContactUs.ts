@@ -82,13 +82,13 @@ const ContactUs: CollectionConfig = {
             label: 'Study Type',
         },
         {
-            name: 'country',
+            name: 'study_country',
             type: 'text',
             required: false,
             label: 'Country',
         },
         {
-            name: 'scholarship',
+            name: 'is_scholarship',
             type: 'checkbox',
             defaultValue: false,
             label: 'Scholarships',
@@ -112,3 +112,5 @@ const ContactUs: CollectionConfig = {
 };
 
 export default ContactUs;
+
+
