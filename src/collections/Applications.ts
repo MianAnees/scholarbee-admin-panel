@@ -1,7 +1,5 @@
 import { CollectionConfig } from 'payload/types';
 
-
-
 const Applications: CollectionConfig = {
     slug: 'applications',
     labels: {
@@ -17,14 +15,77 @@ const Applications: CollectionConfig = {
             label: 'Applicant',
         },
         {
+            name: 'applicant_snapshot',
+            type: 'group',
+            label: 'Applicant Snapshot',
+            fields: [
+                { name: 'first_name', type: 'text', label: 'First Name' },
+                { name: 'last_name', type: 'text', label: 'Last Name' },
+                { name: 'email', type: 'email', label: 'Email' },
+                { name: 'phone_number', type: 'text', label: 'Phone Number' },
+                { name: 'date_of_birth', type: 'date', label: 'Date of Birth' },
+                { name: 'father_name', type: 'text', label: "Father's Name" },
+                { name: 'father_profession', type: 'text', label: "Father's Profession" },
+                { name: 'father_status', type: 'text', label: "Father's Status" },
+                { name: 'father_income', type: 'text', label: "Father's Income" },
+                { name: 'mother_name', type: 'text', label: "Mother's Name" },
+                { name: 'mother_profession', type: 'text', label: "Mother's Profession" },
+                { name: 'mother_status', type: 'text', label: "Mother's Status" },
+                { name: 'mother_income', type: 'text', label: "Mother's Income" },
+                { name: 'religion', type: 'text', label: 'Religion' },
+                { name: 'special_person', type: 'text', label: 'Are You a Special Person?' },
+                { name: 'gender', type: 'text', label: 'Gender' },
+                { name: 'nationality', type: 'text', label: 'Nationality/Country of Residence' },
+                { name: 'provinceOfDomicile', type: 'text', label: 'Province of Domicile' },
+                { name: 'districtOfDomicile', type: 'text', label: 'District of Domicile' },
+                { name: 'stateOrProvince', type: 'text', label: 'State/Province' },
+                { name: 'city', type: 'text', label: 'City' },
+                { name: 'postalCode', type: 'text', label: 'Postal/Zip Code' },
+                { name: 'streetAddress', type: 'text', label: 'Street Address' },
+                { name: 'profile_image_url', type: 'text', label: 'Profile Image URL' },
+                { name: 'user_type', type: 'text', label: 'User Type' },
+                {
+                    name: 'educational_backgrounds',
+                    type: 'array',
+                    label: 'Educational Backgrounds',
+                    fields: [
+                        { name: 'education_level', type: 'text', label: 'Education Level' },
+                        { name: 'field_of_study', type: 'text', label: 'Field of Study' },
+                        { name: 'school_college_university', type: 'text', label: 'School/College/University' },
+                        {
+                            name: 'marks_gpa',
+                            type: 'group',
+                            fields: [
+                                { name: 'total_marks_gpa', type: 'text', label: 'Total Marks/GPA' },
+                                { name: 'obtained_marks_gpa', type: 'text', label: 'Obtained Marks/GPA' }
+                            ],
+                            label: 'Marks/GPA',
+                        },
+                        { name: 'year_of_passing', type: 'text', label: 'Year of Passing' },
+                        { name: 'board', type: 'text', label: 'Board' },
+                        { name: 'transcript', type: 'text', label: 'Transcript URL' }
+                    ],
+                },
+                {
+                    name: 'national_id_card',
+                    type: 'group',
+                    fields: [
+                        { name: 'front_side', type: 'text', label: 'Front Side URL' },
+                        { name: 'back_side', type: 'text', label: 'Back Side URL' }
+                    ],
+                    label: 'National ID Card',
+                }
+            ],
+        },
+        {
             name: 'departments',
-            type: 'array', // An array to store multiple department applications
+            type: 'array',
             label: 'Departments',
             fields: [
                 {
                     name: 'department',
                     type: 'relationship',
-                    relationTo: 'academic_departments', // Assuming you have a departments collection
+                    relationTo: 'academic_departments',
                     required: true,
                     label: 'Department',
                 },
@@ -33,12 +94,12 @@ const Applications: CollectionConfig = {
                     type: 'array',
                     label: 'Program Preferences',
                     minRows: 1,
-                    maxRows: 3, // Limit to 3 preferences
+                    maxRows: 3,
                     fields: [
                         {
                             name: 'program',
                             type: 'relationship',
-                            relationTo: 'programs', // Assuming a programs collection
+                            relationTo: 'programs',
                             required: true,
                             label: 'Program',
                         },
@@ -77,11 +138,72 @@ const Applications: CollectionConfig = {
         {
             name: 'status',
             type: 'select',
+            defaultValue: 'Pending',
             options: ['Pending', 'Approved', 'Rejected'],
-            required: true,
+            required: false,
             label: 'Status',
         },
     ],
+    hooks: {
+        beforeChange: [
+            async ({ data, originalDoc, req }) => {
+                if (!originalDoc) {
+                    // Fetch the applicant's latest information
+                    const user: any = await req.payload.findByID({
+                        collection: 'users',
+                        id: data.applicant,
+                    });
+
+                    // Populate applicant_snapshot only with available fields
+                    data.applicant_snapshot = {
+                        first_name: user.first_name || null,
+                        last_name: user.last_name || null,
+                        email: user.email || null,
+                        phone_number: user.phone_number || null,
+                        date_of_birth: user.date_of_birth || null,
+                        father_name: user.father_name || null,
+                        father_profession: user.father_profession || null,
+                        father_status: user.father_status || null,
+                        father_income: user.father_income || null,
+                        mother_name: user.mother_name || null,
+                        mother_profession: user.mother_profession || null,
+                        mother_status: user.mother_status || null,
+                        mother_income: user.mother_income || null,
+                        religion: user.religion || null,
+                        special_person: user.special_person || null,
+                        gender: user.gender || null,
+                        nationality: user.nationality || null,
+                        provinceOfDomicile: user.provinceOfDomicile || null,
+                        districtOfDomicile: user.districtOfDomicile || null,
+                        stateOrProvince: user.stateOrProvince || null,
+                        city: user.city || null,
+                        postalCode: user.postalCode || null,
+                        streetAddress: user.streetAddress || null,
+                        profile_image_url: user.profile_image_url || null,
+                        user_type: user.user_type || null,
+                        educational_backgrounds: user.educational_backgrounds?.map((edu) => ({
+                            education_level: edu.education_level || null,
+                            field_of_study: edu.field_of_study || null,
+                            school_college_university: edu.school_college_university || null,
+                            marks_gpa: {
+                                total_marks_gpa: edu.marks_gpa?.total_marks_gpa || null,
+                                obtained_marks_gpa: edu.marks_gpa?.obtained_marks_gpa || null,
+                            },
+                            year_of_passing: edu.year_of_passing || null,
+                            board: edu.board || null,
+                            transcript: edu.transcript || null,
+                        })) || [],
+                        national_id_card: {
+                            front_side: user.national_id_card?.front_side || null,
+                            back_side: user.national_id_card?.back_side || null,
+                        },
+                    };
+                }
+                return data;
+            },
+        ],
+    },
 };
 
 export default Applications;
+
