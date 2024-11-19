@@ -121,6 +121,13 @@ const Applications: CollectionConfig = {
             ],
         },
         {
+            name: 'program',
+            type: 'relationship',
+            relationTo: 'programs',
+            required: true,
+            label: 'Program',
+        },
+        {
             name: 'total_processing_fee',
             type: 'number',
             required: true,

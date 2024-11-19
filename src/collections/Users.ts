@@ -429,6 +429,12 @@ const Users: CollectionConfig = {
         readOnly: true,
       },
     },
+    {
+      name: 'isProfileCompleted',
+      type: 'checkbox',
+      defaultValue: false,
+      
+    },
   ],
 };
 
