@@ -1,4 +1,5 @@
 import { CollectionConfig } from 'payload/types';
+import { ObjectId } from 'mongodb';
 
 const Applications: CollectionConfig = {
     slug: 'applications',
@@ -11,7 +12,7 @@ const Applications: CollectionConfig = {
             name: 'applicant',
             type: 'relationship',
             relationTo: 'users',
-            required: true,
+            required: false,
             label: 'Applicant',
         },
         {
@@ -86,7 +87,7 @@ const Applications: CollectionConfig = {
                     name: 'department',
                     type: 'relationship',
                     relationTo: 'academic_departments',
-                    required: true,
+                    required: false,
                     label: 'Department',
                 },
                 {
@@ -100,14 +101,14 @@ const Applications: CollectionConfig = {
                             name: 'program',
                             type: 'relationship',
                             relationTo: 'programs',
-                            required: true,
+                            required: false,
                             label: 'Program',
                         },
                         {
                             name: 'preference_order',
                             type: 'select',
                             options: ['1st', '2nd', '3rd'],
-                            required: true,
+                            required: false,
                             label: 'Preference Order',
                         },
                     ],
@@ -115,7 +116,7 @@ const Applications: CollectionConfig = {
                 {
                     name: 'processing_fee',
                     type: 'number',
-                    required: true,
+                    required: false,
                     label: 'Processing Fee',
                 },
             ],
@@ -124,20 +125,20 @@ const Applications: CollectionConfig = {
             name: 'program',
             type: 'relationship',
             relationTo: 'programs',
-            required: true,
+            required: false,
             label: 'Program',
         },
         {
             name: 'total_processing_fee',
             type: 'number',
-            required: true,
+            required: false,
             label: 'Total Processing Fee',
         },
         {
             name: 'submission_date',
             type: 'date',
             admin: {
-                readOnly: true,
+                readOnly: false,
             },
             defaultValue: () => new Date().toISOString(),
             label: 'Submission Date',
@@ -149,6 +150,41 @@ const Applications: CollectionConfig = {
             options: ['Pending', 'Approved', 'Rejected'],
             required: false,
             label: 'Status',
+        },
+    ],
+    endpoints: [
+        {
+            path: '/update-application-status',
+            method: 'post',
+            handler: async (req, res, next) => {
+                const { applicationId, status } = req.body;
+                // Validation for incoming data
+                if (!applicationId || !status) {
+                    return res.status(400).json({ error: 'Missing applicationId or status in request body' });
+                }
+                
+                try {
+                    console.log(applicationId,status,"----- before api call ----")
+                    // Update the status of the application
+                    const updatedApplication = await req.payload.update({
+                        collection: 'applications',
+                        id: applicationId, // Convert string to ObjectId
+                        data: {
+                            status,
+                        },
+                    });
+
+                    console.log(updatedApplication,"------ hellow world -----")
+
+                    return res.status(200).json({
+                        message: 'Application status updated successfully',
+                        application: updatedApplication,
+                    });
+                } catch (error) {
+                    console.error(error);
+                    return res.status(500).json({ error: 'Error updating application status' });
+                }
+            },
         },
     ],
     hooks: {
