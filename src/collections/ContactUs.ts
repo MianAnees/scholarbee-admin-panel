@@ -78,7 +78,7 @@ const ContactUs: CollectionConfig = {
                 'Master',
                 'Phd',
             ],
-            required: true,
+            required: false,
             label: 'Study Type',
         },
         {
