@@ -46,12 +46,6 @@ const FeeStructures: CollectionConfig = {
             label: 'Application Fee',
         },
         {
-            name: 'other_fees',
-            type: 'textarea',
-            required: false,
-            label: 'Other Fees',
-        },
-        {
             name: 'currency',
             type: 'text',
             required: false,
@@ -63,6 +57,37 @@ const FeeStructures: CollectionConfig = {
             required: false,
             label: 'Payment Schedule',
         },
+        {
+            name: 'other_fees',
+            type: 'array',
+            required: false, // Set to true if this is mandatory
+            label: 'Other Fee Structure',
+            fields: [
+                {
+                    name: 'fee_name',
+                    type: 'text',
+                    required: true,
+                    label: 'Fee Name',
+                },
+                {
+                    name: 'fee_amount',
+                    type: 'number',
+                    required: true,
+                    label: 'Fee Amount',
+                },
+                {
+                    name: 'include_in_first_semester',
+                    type: 'checkbox',
+                    required: false,
+                    label: 'Include in First Semester Fee',
+                    defaultValue: false,
+                },
+            ],
+            admin: {
+                description: 'Add multiple fee items, specifying their amount and whether they should be included in the first semester fee.',
+            },
+        },
+        
         {
             name: 'created_at',
             type: 'date',
