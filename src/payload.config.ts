@@ -38,6 +38,12 @@ import AdmissionPrograms from './collections/AdmissionPrograms'
 import Applications from './collections/Applications'
 import Payments from './collections/Payments'
 import ContactUs from './collections/ContactUs'
+import Cities from './collections/Cities'
+import Countries from './collections/Countries'
+import States from './collections/States'
+import ProgramTypeTemplate from './collections/ProgramTypeTemplate'
+import ProgramsTemplate from './collections/ProgramTemplate'
+import PostalCodes from './collections/PostalCode'
 // import Applications from './collections/Applications'
 
 
@@ -83,7 +89,8 @@ export default buildConfig({
     Applications,
     AdmissionPrograms,
     Payments,
-    ContactUs
+    ContactUs,
+    Cities,Countries,States,ProgramTypeTemplate,ProgramsTemplate,PostalCodes
   ],
   typescript: {
     outputFile: path.resolve(__dirname, 'payload-types.ts'),

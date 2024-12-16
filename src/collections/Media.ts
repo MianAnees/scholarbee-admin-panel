@@ -33,7 +33,26 @@ const Media: CollectionConfig = {
             required: false,
             label: 'Alternative Text',
         },
+        {
+            name: 'createdBy',
+            type: 'relationship',
+            relationTo: 'users', // Assuming 'users' is the slug for your users collection
+            admin: {
+                position: 'sidebar',
+                readOnly: true,
+            },
+        },
     ],
+    hooks: {
+        beforeChange: [
+            ({ data, req, operation }) => {
+                if (operation === 'create' && req.user) {
+                    data.createdBy = req.user.id; // Assign the user ID to the createdBy field
+                }
+                return data;
+            },
+        ],
+    },
 };
 
 export default Media;
