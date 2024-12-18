@@ -141,9 +141,9 @@ const Programs: CollectionConfig = {
             },
         },
         {
-            name: 'program_template',
+            name: 'programs_template',
             type: 'relationship',
-            relationTo: 'program_template', // Assuming slug for ProgramTemplate collection
+            relationTo: 'programs_template', // Assuming slug for ProgramTemplate collection
             label: 'Program Template',
         },
         {
