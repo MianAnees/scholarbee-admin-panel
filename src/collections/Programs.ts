@@ -126,6 +126,12 @@ const Programs: CollectionConfig = {
             label: 'Created At',
         },
         {
+            name: 'sorting_weight',
+            type: 'text',
+            required: false,
+            label: 'Sorting Weight',
+          },
+        {
             name: 'createdBy',
             type: 'relationship',
             relationTo: 'users', // Assuming 'users' is the slug for your users collection
@@ -133,6 +139,18 @@ const Programs: CollectionConfig = {
                 position: 'sidebar',
                 readOnly: true,
             },
+        },
+        {
+            name: 'program_template',
+            type: 'relationship',
+            relationTo: 'program_template', // Assuming slug for ProgramTemplate collection
+            label: 'Program Template',
+        },
+        {
+            name: 'program_type_template',
+            type: 'relationship',
+            relationTo: 'program_type_template', // Assuming slug for ProgramTypeTemplate collection
+            label: 'Program Type Template',
         },
     ],
     hooks: {

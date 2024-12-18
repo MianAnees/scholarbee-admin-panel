@@ -1,7 +1,7 @@
 import { CollectionConfig } from 'payload/types';
 
 const ProgramTypeTemplate: CollectionConfig = {
-    slug: 'program-type-template',
+    slug: 'program_type_template',
     labels: {
         singular: 'Program Type Template',
         plural: 'Program Type Templates',
