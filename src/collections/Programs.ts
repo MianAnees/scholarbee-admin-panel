@@ -140,6 +140,18 @@ const Programs: CollectionConfig = {
                 readOnly: true,
             },
         },
+        {
+            name: 'program_template',
+            type: 'relationship',
+            relationTo: 'program_template', // Assuming slug for ProgramTemplate collection
+            label: 'Program Template',
+        },
+        {
+            name: 'program_type_template',
+            type: 'relationship',
+            relationTo: 'program_type_template', // Assuming slug for ProgramTypeTemplate collection
+            label: 'Program Type Template',
+        },
     ],
     hooks: {
         beforeChange: [
