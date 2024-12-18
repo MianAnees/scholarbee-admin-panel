@@ -126,6 +126,12 @@ const Programs: CollectionConfig = {
             label: 'Created At',
         },
         {
+            name: 'sorting_weight',
+            type: 'text',
+            required: false,
+            label: 'Sorting Weight',
+          },
+        {
             name: 'createdBy',
             type: 'relationship',
             relationTo: 'users', // Assuming 'users' is the slug for your users collection
