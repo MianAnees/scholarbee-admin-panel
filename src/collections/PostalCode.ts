@@ -1,7 +1,7 @@
 import { CollectionConfig } from 'payload/types';
 
 const PostalCodes: CollectionConfig = {
-    slug: 'postal-codes',
+    slug: 'postal_codes',
     labels: {
         singular: 'Postal Code',
         plural: 'Postal Codes',
