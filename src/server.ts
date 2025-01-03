@@ -5,7 +5,7 @@ import crypto from 'crypto';
 import { transporter } from './utiles/mailConfig';
 import dotenv from 'dotenv';
 import { ObjectId } from 'mongodb';
-import { updateSortingWeights } from './utiles/sortingWeights';
+import { assignRandomSeatsToPrograms, assignSortingWeightsToPrograms, updateSortingWeights } from './utiles/sortingWeights';
 
 // import router from './customRoutes/routes';
 dotenv.config();
@@ -23,7 +23,10 @@ app.get('/', (_, res) => {
   res.redirect('/admin')
 })
 app.get('/test', (_, res) => {
-  res.send(updateSortingWeights());
+  console.log("----test--")
+  res.send(assignSortingWeightsToPrograms());
+  // res.send(assignRandomSeatsToPrograms());
+  // res.send(updateSortingWeights());
 })
 
 app.use('/media', express.static('media'));
@@ -162,15 +165,13 @@ const start = async () => {
 
       // Check if _id is present in query params
       if (_id) {
-
         pipeline.push({
           $match: {
             _id: { $eq: new ObjectId(_id.toString()) }, // Ensure proper conversion to ObjectId
           },
         });
 
-
-        // Add lookups as before for a single record
+        // Add lookups for a single record
         pipeline.push({
           $lookup: {
             from: 'admissions',
@@ -218,6 +219,7 @@ const start = async () => {
                 },
               },
               { $unwind: { path: '$academic_departments', preserveNullAndEmptyArrays: true } },
+              // Include sorting_weight in the pipeline
             ],
             as: 'program',
           },
@@ -242,29 +244,29 @@ const start = async () => {
           },
         });
 
-        // Execute the aggregation pipeline for single record
+        // Sorting for single record (not relevant but kept for consistency)
+        pipeline.push({ $sort: { 'program.sorting_weight': -1 } });
+
         const result = await payload.db.collections['admission_programs'].aggregate(pipeline);
 
-        // Check if a document was found
         if (result.length > 0) {
           res.status(200).json({ doc: result[0] });
         } else {
           res.status(404).json({ error: 'Record not found.' });
         }
 
-        return;  // Return after processing single record
+        return; // Return after processing single record
       }
 
-      // Continue with normal logic if no _id is provided (pagination, filtering, etc.)
+      // Pagination and filtering logic for multiple records
       const pageNum = parseInt(page as string, 10) || 1;
       const limitNum = parseInt(limit as string, 10) || 10;
       const skip = (pageNum - 1) * limitNum;
 
-      // Lookup for Admissions
       pipeline.push({
         $lookup: {
           from: 'admissions',
-          let: { admissionId: { $toObjectId: '$admission' } }, // Convert string to ObjectId
+          let: { admissionId: { $toObjectId: '$admission' } },
           pipeline: [
             {
               $match: {
@@ -273,11 +275,10 @@ const start = async () => {
                 },
               },
             },
-            // Lookup for University in Admissions
             {
               $lookup: {
                 from: 'universities',
-                let: { universityId: { $toObjectId: '$university_id' } }, // Convert string to ObjectId
+                let: { universityId: { $toObjectId: '$university_id' } },
                 pipeline: [
                   {
                     $match: {
@@ -291,12 +292,10 @@ const start = async () => {
               },
             },
             { $unwind: { path: '$university', preserveNullAndEmptyArrays: true } },
-
-            // Lookup for Campus in Admissions
             {
               $lookup: {
                 from: 'campuses',
-                let: { campusId: { $toObjectId: '$campus_id' } }, // Convert string to ObjectId
+                let: { campusId: { $toObjectId: '$campus_id' } },
                 pipeline: [
                   {
                     $match: {
@@ -305,11 +304,10 @@ const start = async () => {
                       },
                     },
                   },
-                  // Lookup for Address in Campus
                   {
                     $lookup: {
                       from: 'addresses',
-                      let: { addressId: { $toObjectId: '$address_id' } }, // Convert string to ObjectId
+                      let: { addressId: { $toObjectId: '$address_id' } },
                       pipeline: [
                         {
                           $match: {
@@ -334,8 +332,6 @@ const start = async () => {
       });
       pipeline.push({ $unwind: '$admission' });
 
-
-      // Lookup for Programs
       pipeline.push({
         $lookup: {
           from: 'programs',
@@ -365,14 +361,13 @@ const start = async () => {
               },
             },
             { $unwind: { path: '$academic_departments', preserveNullAndEmptyArrays: true } },
+            // Include sorting_weight for consistency
           ],
           as: 'program',
         },
       });
-
       pipeline.push({ $unwind: '$program' });
 
-      // Lookup for Fee Structures (append as array)
       pipeline.push({
         $lookup: {
           from: 'fee_structures',
@@ -390,92 +385,35 @@ const start = async () => {
         },
       });
 
-      // Apply filters and pagination only if _id is not present
-      if (major) {
-        pipeline.push({
-          $match: {
-            'program.name': { $regex: major, $options: 'i' },
-          },
-        });
-      }
-      if (programName) {
-        pipeline.push({
-          $match: {
-            'program.name': { $regex: programName, $options: 'i' },
-          },
-        });
-      }
-      if (university) {
-        pipeline.push({
-          $match: {
-            'admission.university_id': { $eq: university },
-          },
-        });
-      }
-      if (campusId) {
-        pipeline.push({
-          $match: {
-            'program.campus_id': { $eq: campusId },
-          },
-        });
-      }
-      if (year) {
-        pipeline.push({
-          $match: {
-            'admission.admission_startdate': {
-              $gte: new Date(`${year}-01-01`),
-              $lt: new Date(`${year}-12-31`),
-            },
-          },
-        });
-      }
-      if (intake) {
-        pipeline.push({
-          $match: {
-            'program.intake_periods.intake_period': { $regex: intake, $options: 'i' },
-          },
-        });
-      }
-      if (studyLevel) {
-        pipeline.push({
-          $match: {
-            'program.degree_level': { $regex: studyLevel, $options: 'i' },
-          },
-        });
-      }
-      if (courseForm) {
-        pipeline.push({
-          $match: {
-            'program.mode_of_study': { $regex: courseForm, $options: 'i' },
-          },
-        });
-      }
+      // Apply filters
+      if (major) pipeline.push({ $match: { 'program.name': { $regex: major, $options: 'i' } } });
+      if (programName) pipeline.push({ $match: { 'program.name': { $regex: programName, $options: 'i' } } });
+      if (university) pipeline.push({ $match: { 'admission.university_id': { $eq: university } } });
+      if (campusId) pipeline.push({ $match: { 'program.campus_id': { $eq: campusId } } });
+      if (year) pipeline.push({ $match: { 'admission.admission_startdate': { $gte: new Date(`${year}-01-01`), $lt: new Date(`${year}-12-31`) } } });
+      if (intake) pipeline.push({ $match: { 'program.intake_periods.intake_period': { $regex: intake, $options: 'i' } } });
+      if (studyLevel) pipeline.push({ $match: { 'program.degree_level': { $regex: studyLevel, $options: 'i' } } });
+      if (courseForm) pipeline.push({ $match: { 'program.mode_of_study': { $regex: courseForm, $options: 'i' } } });
       if (fee) {
         const [minFee, maxFee] = (fee as string).split('-').map(Number);
-        pipeline.push({
-          $match: {
-            'fee_structures.tuition_fee': { $gte: minFee, $lte: maxFee },
-          },
-        });
+        pipeline.push({ $match: { 'fee_structures.tuition_fee': { $gte: minFee, $lte: maxFee } } });
       }
+
+      // Add sorting by program.sorting_weight
+      pipeline.push({ $sort: { 'program.sorting_weight': -1 } });
 
       // Pagination
       pipeline.push({
         $facet: {
-          docs: [
-            { $skip: skip },
-            { $limit: limitNum },
-          ],
-          totalCount: [
-            { $count: 'count' },
-          ],
+          docs: [{ $skip: skip }, { $limit: limitNum }],
+          totalCount: [{ $count: 'count' }],
         },
       });
 
-      // Execute the aggregation pipeline
-      const result = await payload.db.collections['admission_programs'].aggregate(pipeline);
-      const docs = result[0].docs;
-      const totalCount = result[0].totalCount.length > 0 ? result[0].totalCount[0].count : 0;
+      const result = await payload.db.collections['admission_programs'].aggregate(pipeline)
+
+      const docs = result[0]?.docs || [];
+      const totalCount = result[0]?.totalCount?.[0]?.count || 0;
       const totalPages = Math.ceil(totalCount / limitNum);
 
       const pagination = {
@@ -491,11 +429,14 @@ const start = async () => {
       };
 
       res.status(200).json({ docs, pagination });
-    } catch (error) {
-      console.error('Error fetching admission programs:', error);
-      res.status(500).json({ error: 'Failed to fetch admission programs.' });
+
+      // res.status(200).json({ docs, totalCount, totalPages, currentPage: pageNum });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: 'Internal Server Error' });
     }
   });
+
 
 
 

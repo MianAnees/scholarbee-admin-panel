@@ -45,12 +45,12 @@ const Admissions: CollectionConfig = {
             required: true,
             label: 'Admission Title',
         },
-        {
-            name: 'available_seats',
-            type: 'number',
-            required: true,
-            label: 'Available Seats',
-        },
+        // {
+        //     name: 'available_seats',
+        //     type: 'number',
+        //     required: true,
+        //     label: 'Available Seats',
+        // },
         {
             name: 'admission_description',
             type: 'textarea',

@@ -43,6 +43,12 @@ const AdmissionPrograms: CollectionConfig = {
             label: 'Fee',
         },
         {
+            name: 'available_seats',
+            type: 'number',
+            required: true,
+            label: 'Available Seats',
+        },
+        {
             name: 'admission_requirements',
             type: 'array',
             label: 'Admission Requirements',
