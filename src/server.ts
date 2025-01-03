@@ -5,7 +5,7 @@ import crypto from 'crypto';
 import { transporter } from './utiles/mailConfig';
 import dotenv from 'dotenv';
 import { ObjectId } from 'mongodb';
-import { assignRandomSeatsToPrograms, assignSortingWeightsToPrograms, updateSortingWeights } from './utiles/sortingWeights';
+import { assignSortingWeightsToPrograms } from './utiles/sortingWeights';
 
 // import router from './customRoutes/routes';
 dotenv.config();
