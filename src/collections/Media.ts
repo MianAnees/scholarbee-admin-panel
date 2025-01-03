@@ -31,7 +31,7 @@ const Media: CollectionConfig = {
             name: 'alt',
             type: 'text',
             required: false,
-            label: 'Alternative Text',
+            label: 'descriptions',
         },
         {
             name: 'createdBy',
