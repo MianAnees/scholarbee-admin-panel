@@ -533,22 +533,26 @@ const start = async () => {
 
   app.get('/api/contact-us-stats', async (req, res) => {
     try {
-      const pipeline = [];
+      // Step 1: Count total records for percentage calculation
+      const totalRecords = await payload.db.collections['contact-us'].countDocuments();
 
-      // Inquiry Type Breakdown
-      pipeline.push({
-        $group: {
-          _id: '$type',
-          count: { $sum: 1 }
+      // Aggregation Pipelines for Other Stats
+      const pipeline = [
+        {
+          $group: {
+            _id: '$type',
+            count: { $sum: 1 }
+          }
+        },
+        {
+          $project: {
+            type: '$_id',
+            count: 1,
+            _id: 0
+          }
         }
-      });
-      pipeline.push({
-        $addFields: {
-          type: '$_id'
-        }
-      });
+      ];
 
-      // User Type Stats
       const userTypePipeline = [
         {
           $group: {
@@ -558,7 +562,6 @@ const start = async () => {
         }
       ];
 
-      // Study Level Stats
       const studyLevelPipeline = [
         {
           $group: {
@@ -568,18 +571,6 @@ const start = async () => {
         }
       ];
 
-      // Country Distribution
-      const countryPipeline = [
-        {
-          $group: {
-            _id: '$study_country',
-            count: { $sum: 1 }
-          }
-        },
-        { $sort: { count: -1 } }
-      ];
-
-      // Scholarship Interest
       const scholarshipPipeline = [
         {
           $group: {
@@ -589,41 +580,51 @@ const start = async () => {
         }
       ];
 
-      // Timeline Trends
-      const timelinePipeline = [
+      // Gender Pipeline with Percentage Calculation
+      const genderPipeline = [
         {
           $group: {
-            _id: { $substr: ['$created_at', 0, 7] }, // Extract YYYY-MM from created_at
+            _id: '$gender',
             count: { $sum: 1 }
           }
         },
-        { $sort: { _id: 1 } }
+        {
+          $project: {
+            gender: '$_id',
+            count: 1,
+            percentage: {
+              $multiply: [
+                { $divide: ['$count', totalRecords] },
+                100
+              ]
+            },
+            _id: 0
+          }
+        }
       ];
 
-      // Run Aggregations
+      // Execute all aggregations in parallel
       const [
         inquiryTypeStats,
         userTypeStats,
         studyLevelStats,
-        countryStats,
         scholarshipStats,
-        timelineStats
+        genderStats
       ] = await Promise.all([
         payload.db.collections['contact-us'].aggregate(pipeline),
         payload.db.collections['contact-us'].aggregate(userTypePipeline),
         payload.db.collections['contact-us'].aggregate(studyLevelPipeline),
-        payload.db.collections['contact-us'].aggregate(countryPipeline),
         payload.db.collections['contact-us'].aggregate(scholarshipPipeline),
-        payload.db.collections['contact-us'].aggregate(timelinePipeline)
+        payload.db.collections['contact-us'].aggregate(genderPipeline),
       ]);
 
+      // Send the response with the stats
       res.status(200).json({
         inquiryTypeStats,
         userTypeStats,
         studyLevelStats,
-        countryStats,
         scholarshipStats,
-        timelineStats
+        genderStats // This will include gender percentages
       });
     } catch (err) {
       console.error(err);
