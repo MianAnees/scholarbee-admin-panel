@@ -425,36 +425,36 @@ const Users: CollectionConfig = {
       name: '_verified',
       type: 'checkbox',
       defaultValue: false,
-      admin: {
-        readOnly: true,
-      },
+      // admin: {
+      //   readOnly: true,
+      // },
     },
     {
       name: 'isProfileCompleted',
       type: 'checkbox',
       defaultValue: false,
-      
+
     },
     {
       name: 'createdBy',
       type: 'relationship',
       relationTo: 'users', // Assuming 'users' is the slug for your users collection
       admin: {
-          position: 'sidebar',
-          readOnly: true,
+        position: 'sidebar',
+        readOnly: true,
       },
-  },
-],
-hooks: {
-  beforeChange: [
-      ({ data, req, operation }) => {
-          if (operation === 'create' && req.user) {
-              data.createdBy = req.user.id; // Assign the user ID to the createdBy field
-          }
-          return data;
-      },
+    },
   ],
-},
+  hooks: {
+    beforeChange: [
+      ({ data, req, operation }) => {
+        if (operation === 'create' && req.user) {
+          data.createdBy = req.user.id; // Assign the user ID to the createdBy field
+        }
+        return data;
+      },
+    ],
+  },
 };
 
 export default Users;

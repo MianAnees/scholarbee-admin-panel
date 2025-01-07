@@ -16,6 +16,13 @@ const Applications: CollectionConfig = {
             label: 'Applicant',
         },
         {
+            name: 'campus_id',
+            type: 'relationship',
+            relationTo: 'campuses',
+            required: false,
+            label: 'Campus',
+        },
+        {
             name: 'applicant_snapshot',
             type: 'group',
             label: 'Applicant Snapshot',
@@ -162,9 +169,9 @@ const Applications: CollectionConfig = {
                 if (!applicationId || !status) {
                     return res.status(400).json({ error: 'Missing applicationId or status in request body' });
                 }
-                
+
                 try {
-                    console.log(applicationId,status,"----- before api call ----")
+                    console.log(applicationId, status, "----- before api call ----")
                     // Update the status of the application
                     const updatedApplication = await req.payload.update({
                         collection: 'applications',
@@ -174,7 +181,7 @@ const Applications: CollectionConfig = {
                         },
                     });
 
-                    console.log(updatedApplication,"------ hellow world -----")
+                    console.log(updatedApplication, "------ hellow world -----")
 
                     return res.status(200).json({
                         message: 'Application status updated successfully',
@@ -187,6 +194,7 @@ const Applications: CollectionConfig = {
             },
         },
     ],
+
     hooks: {
         beforeChange: [
             async ({ data, originalDoc, req }) => {
