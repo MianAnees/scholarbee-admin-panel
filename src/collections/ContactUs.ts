@@ -82,6 +82,17 @@ const ContactUs: CollectionConfig = {
             label: 'Study Type',
         },
         {
+            name: 'gender',
+            type: 'select',
+            options: [
+                'male',
+                'female',
+                'other',
+            ],
+            required: false,
+            label: 'Gender',
+        },
+        {
             name: 'study_country',
             type: 'text',
             required: false,
