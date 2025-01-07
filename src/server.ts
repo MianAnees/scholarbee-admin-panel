@@ -5,7 +5,7 @@ import crypto from 'crypto';
 import { transporter } from './utiles/mailConfig';
 import dotenv from 'dotenv';
 import { ObjectId } from 'mongodb';
-import { assignSortingWeightsToPrograms } from './utiles/sortingWeights';
+// import { assignSortingWeightsToPrograms } from './utiles/sortingWeights';
 
 // import router from './customRoutes/routes';
 dotenv.config();
@@ -22,12 +22,12 @@ app.use(cors({
 app.get('/', (_, res) => {
   res.redirect('/admin')
 })
-app.get('/test', (_, res) => {
-  console.log("----test--")
-  res.send(assignSortingWeightsToPrograms());
-  // res.send(assignRandomSeatsToPrograms());
-  // res.send(updateSortingWeights());
-})
+// app.get('/test', (_, res) => {
+//   console.log("----test--")
+//   res.send(assignSortingWeightsToPrograms());
+//   // res.send(assignRandomSeatsToPrograms());
+//   // res.send(updateSortingWeights());
+// })
 
 app.use('/media', express.static('media'));
 
@@ -52,8 +52,8 @@ const start = async () => {
         secure: Number(process.env.SMTP_PORT) === 465, // true for port 465, false (the default) for 587 and others
         requireTLS: true,
       },
-      fromName: 'no-reply@scholarbee.pk',
-      fromAddress: 'basitafraz8@gmail.com',
+      fromName: 'Admin Scholarbee ',
+      fromAddress: 'Alitahir@pickysolutions.com',
     },
   })
 
@@ -95,7 +95,7 @@ const start = async () => {
 
       const verificationUrl = `${process.env.FRONTEND_URL}/verification/${verifyToken}`;
       const mailOptions: any = {
-        from: 'basitafraz8@gmail.com',
+        from: 'alitahir@pickysolutions.com',
         to: user.email,
         subject: 'Verify Your Email Address',
         html: `<p>Please verify your email by clicking the following link: <a href=${verificationUrl}>Verification Link</a></p>`
@@ -439,7 +439,197 @@ const start = async () => {
 
 
 
+  app.get('/api/admission-dashboard-stats', async (req, res) => {
+    const { campusId, year } = req.query;
 
+    try {
+      const pipeline = [];
+
+      // Match by campusId if provided (you may need to adjust how this is handled if there's a relation to departments or programs)
+      if (campusId) {
+        pipeline.push({
+          $match: {
+            'campus_id': { $eq: campusId }, // Modify based on how campus_id is stored
+          },
+        });
+      }
+
+      // Match by year if provided
+      if (year) {
+        pipeline.push({
+          $match: {
+            'submission_date': {
+              $gte: new Date(`${year}-01-01`),
+              $lt: new Date(`${year}-12-31`),
+            },
+          },
+        });
+      }
+
+      // Group stats based on status
+      pipeline.push({
+        $group: {
+          _id: null,
+          totalReceived: { $sum: 1 },
+          totalApproved: {
+            $sum: {
+              $cond: [{ $eq: ['$status', 'Approved'] }, 1, 0],
+            },
+          },
+          totalRejected: {
+            $sum: {
+              $cond: [{ $eq: ['$status', 'Rejected'] }, 1, 0],
+            },
+          },
+          totalPending: {
+            $sum: {
+              $cond: [{ $eq: ['$status', 'Pending'] }, 1, 0],
+            },
+          },
+          dailyReceived: {
+            $sum: {
+              $cond: [
+                { $gte: ['$submission_date', new Date(Date.now() - 24 * 60 * 60 * 1000)] },
+                1,
+                0,
+              ],
+            },
+          },
+        },
+      });
+
+      // Run aggregation
+      const result = await payload.db.collections['applications'].aggregate(pipeline);
+      console.log(result, "-----in stats of applications------", pipeline)
+      if (result.length > 0) {
+        const stats = result[0];
+        res.status(200).json({
+          receivedAdmissions: {
+            count: stats.totalReceived,
+            daily: stats.dailyReceived,
+          },
+          approvedAdmissions: {
+            count: stats.totalApproved,
+            daily: stats.dailyReceived, // Adjust based on approval time if needed
+          },
+          rejectedAdmissions: {
+            count: stats.totalRejected,
+            daily: stats.dailyReceived, // Adjust based on rejection time if needed
+          },
+          pendingAdmissions: {
+            count: stats.totalPending,
+            daily: stats.dailyReceived, // Adjust based on pending time if needed
+          },
+        });
+      } else {
+        res.status(404).json({ error: 'No statistics available for the given filters.' });
+      }
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
+  });
+
+
+  app.get('/api/contact-us-stats', async (req, res) => {
+    try {
+      const pipeline = [];
+
+      // Inquiry Type Breakdown
+      pipeline.push({
+        $group: {
+          _id: '$type',
+          count: { $sum: 1 }
+        }
+      });
+      pipeline.push({
+        $addFields: {
+          type: '$_id'
+        }
+      });
+
+      // User Type Stats
+      const userTypePipeline = [
+        {
+          $group: {
+            _id: '$user_type',
+            count: { $sum: 1 }
+          }
+        }
+      ];
+
+      // Study Level Stats
+      const studyLevelPipeline = [
+        {
+          $group: {
+            _id: '$study_level',
+            count: { $sum: 1 }
+          }
+        }
+      ];
+
+      // Country Distribution
+      const countryPipeline = [
+        {
+          $group: {
+            _id: '$study_country',
+            count: { $sum: 1 }
+          }
+        },
+        { $sort: { count: -1 } }
+      ];
+
+      // Scholarship Interest
+      const scholarshipPipeline = [
+        {
+          $group: {
+            _id: '$is_scholarship',
+            count: { $sum: 1 }
+          }
+        }
+      ];
+
+      // Timeline Trends
+      const timelinePipeline = [
+        {
+          $group: {
+            _id: { $substr: ['$created_at', 0, 7] }, // Extract YYYY-MM from created_at
+            count: { $sum: 1 }
+          }
+        },
+        { $sort: { _id: 1 } }
+      ];
+
+      // Run Aggregations
+      const [
+        inquiryTypeStats,
+        userTypeStats,
+        studyLevelStats,
+        countryStats,
+        scholarshipStats,
+        timelineStats
+      ] = await Promise.all([
+        payload.db.collections['contact-us'].aggregate(pipeline),
+        payload.db.collections['contact-us'].aggregate(userTypePipeline),
+        payload.db.collections['contact-us'].aggregate(studyLevelPipeline),
+        payload.db.collections['contact-us'].aggregate(countryPipeline),
+        payload.db.collections['contact-us'].aggregate(scholarshipPipeline),
+        payload.db.collections['contact-us'].aggregate(timelinePipeline)
+      ]);
+
+      res.status(200).json({
+        inquiryTypeStats,
+        userTypeStats,
+        studyLevelStats,
+        countryStats,
+        scholarshipStats,
+        timelineStats
+      });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
+  });
 
 
 
