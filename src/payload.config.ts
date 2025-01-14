@@ -44,6 +44,7 @@ import States from './collections/States'
 import ProgramTypeTemplate from './collections/ProgramTypeTemplate'
 import ProgramsTemplate from './collections/ProgramTemplate'
 import PostalCodes from './collections/PostalCode'
+import CustomDashboardView from './pages/dashboard'
 // import Applications from './collections/Applications'
 
 
@@ -54,6 +55,15 @@ export default buildConfig({
     user: Users.slug,
     bundler: webpackBundler(),
     components: {
+      views: {
+        Dashboard: CustomDashboardView,
+        // Override default login page
+        // CustomView: {
+        //   path: "/dashboard",
+        //   exact: true,
+        //   Component: CustomDashboard,
+        // },
+      },
       // views: {
       //   DynamicForm: DynamicForm,
       // },
@@ -90,7 +100,7 @@ export default buildConfig({
     AdmissionPrograms,
     Payments,
     ContactUs,
-    Cities,Countries,States,ProgramTypeTemplate,ProgramsTemplate,PostalCodes
+    Cities, Countries, States, ProgramTypeTemplate, ProgramsTemplate, PostalCodes
   ],
   typescript: {
     outputFile: path.resolve(__dirname, 'payload-types.ts'),
