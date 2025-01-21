@@ -5,6 +5,8 @@ import crypto from 'crypto';
 import { transporter } from './utiles/mailConfig';
 import dotenv from 'dotenv';
 import { ObjectId } from 'mongodb';
+import { insertDataToCollections } from './scripts/insert-data-api';
+
 // import { assignSortingWeightsToPrograms } from './utiles/sortingWeights';
 
 // import router from './customRoutes/routes';
@@ -439,96 +441,87 @@ const start = async () => {
 
 
 
-  app.get('/api/admission-dashboard-stats', async (req, res) => {
-    const { campusId, year } = req.query;
-
+  app.post('/api/compare-universities', async (req, res) => {
     try {
-      const pipeline = [];
+      const { universityIds } = req.body; // Array of university IDs to compare
+      console.log(universityIds, "-------- helloworld in -----");
 
-      // Match by campusId if provided (you may need to adjust how this is handled if there's a relation to departments or programs)
-      if (campusId) {
-        pipeline.push({
-          $match: {
-            'campus_id': { $eq: campusId }, // Modify based on how campus_id is stored
-          },
-        });
+      if (!universityIds || universityIds.length !== 2) {
+        return res.status(400).json({ error: 'Please provide exactly two university IDs for comparison.' });
       }
 
-      // Match by year if provided
-      if (year) {
-        pipeline.push({
-          $match: {
-            'submission_date': {
-              $gte: new Date(`${year}-01-01`),
-              $lt: new Date(`${year}-12-31`),
-            },
-          },
-        });
-      }
-
-      // Group stats based on status
-      pipeline.push({
-        $group: {
-          _id: null,
-          totalReceived: { $sum: 1 },
-          totalApproved: {
-            $sum: {
-              $cond: [{ $eq: ['$status', 'Approved'] }, 1, 0],
-            },
-          },
-          totalRejected: {
-            $sum: {
-              $cond: [{ $eq: ['$status', 'Rejected'] }, 1, 0],
-            },
-          },
-          totalPending: {
-            $sum: {
-              $cond: [{ $eq: ['$status', 'Pending'] }, 1, 0],
-            },
-          },
-          dailyReceived: {
-            $sum: {
-              $cond: [
-                { $gte: ['$submission_date', new Date(Date.now() - 24 * 60 * 60 * 1000)] },
-                1,
-                0,
-              ],
-            },
-          },
+      // Fetch universities
+      const universities = await payload.find({
+        collection: 'universities',
+        where: {
+          id: { in: universityIds },
         },
       });
 
-      // Run aggregation
-      const result = await payload.db.collections['applications'].aggregate(pipeline);
-      console.log(result, "-----in stats of applications------", pipeline)
-      if (result.length > 0) {
-        const stats = result[0];
-        res.status(200).json({
-          receivedAdmissions: {
-            count: stats.totalReceived,
-            daily: stats.dailyReceived,
-          },
-          approvedAdmissions: {
-            count: stats.totalApproved,
-            daily: stats.dailyReceived, // Adjust based on approval time if needed
-          },
-          rejectedAdmissions: {
-            count: stats.totalRejected,
-            daily: stats.dailyReceived, // Adjust based on rejection time if needed
-          },
-          pendingAdmissions: {
-            count: stats.totalPending,
-            daily: stats.dailyReceived, // Adjust based on pending time if needed
-          },
-        });
-      } else {
-        res.status(404).json({ error: 'No statistics available for the given filters.' });
-      }
-    } catch (err) {
-      console.error(err);
-      res.status(500).json({ error: 'Internal Server Error' });
+      // Fetch campuses associated with the universities
+      const campuses = await payload.find({
+        collection: 'campuses',
+        where: {
+          university_id: { in: universityIds },
+        },
+      });
+
+      // Fetch programs associated with the campuses
+      const campusIds = campuses.docs.map((campus) => campus.id);
+      const programs = await payload.find({
+        collection: 'programs',
+        where: {
+          campus_id: { in: campusIds },
+        },
+      });
+
+      // Fetch fee structures associated with the programs
+      const programIds = programs.docs.map((program) => program.id);
+      const feeStructures = await payload.find({
+        collection: 'fee_structures',
+        where: {
+          program_id: { in: programIds },
+        },
+      });
+
+      console.log(feeStructures, programs, campuses, universities);
+
+      // Process the comparison data
+      const comparisonData = universities.docs.map((university) => {
+        const campus = campuses.docs.find((c) => c.university_id === university.id);
+        const uniPrograms = programs.docs.filter((p) => p.campus_id === campus?.id);
+        const fees = feeStructures.docs.filter((f) =>
+          uniPrograms.some((p) => p.id === f.program_id)
+        );
+
+        return {
+          name: university.name,
+          location: campus?.address_id || 'N/A', // Replace with actual mapping if necessary
+          gpa: university.gpa || 'N/A',
+          ib: university.ib || 'N/A',
+          percentageSystem: university.percentageSystem || 'N/A',
+          tuition: fees.reduce((sum, f) => sum + (f.tuition_fee as number), 0) || 0,
+          costOfLiving: campus?.cost_of_living || 0,
+          total: fees.reduce((sum, f) => sum + (f.tuition_fee as number), 0) + ((campus?.cost_of_living as number) || 0),
+          ielts: university.ielts || 'N/A',
+          toefl: university.toefl || 'N/A',
+          sat: university.sat || 'N/A',
+          students: university.total_students || 0,
+          facultyStrength: university.total_faculty || 0,
+          internationalStudents: university.international_students || 0,
+          acceptanceRate: university.acceptance_rate || 'N/A',
+          numberOfCourses: uniPrograms.length || 0,
+        };
+      });
+
+      res.status(200).json({ comparison: comparisonData });
+    } catch (error) {
+      console.error('Error fetching comparison data:', error);
+      res.status(500).json({ error: 'Failed to fetch comparison data.' });
     }
   });
+
+
 
 
   app.get('/api/contact-us-stats', async (req, res) => {
@@ -684,6 +677,105 @@ const start = async () => {
       res.status(500).json({ error: 'Internal server error' });
     }
   });
+
+
+  app.post('/api/insert-data', async (req, res) => {
+    try {
+      const data = req.body;
+      if (!data || !data.universities) {
+        console.log(data)
+        return res.status(400).json({ message: 'Invalid request data' });
+      }
+      console.log(data, "---- out of if ---")
+
+      await insertDataToCollections(data);
+      res.status(200).json({ message: 'Data inserted successfully!' });
+    } catch (error) {
+      console.error('Error in /api/insert-data:', error);
+      res.status(500).json({ message: 'An error occurred during insertion.', error });
+    }
+  });
+
+  app.post('/api/compare-universities', async (req, res) => {
+    try {
+      const { universityIds } = req.body; // Array of university IDs to compare
+
+      if (!universityIds || universityIds.length !== 2) {
+        return res.status(400).json({ error: 'Please provide exactly two university IDs for comparison.' });
+      }
+
+      // Fetch universities
+      const universities = await payload.db.collections.universities.find({
+        where: {
+          id: {
+            in: universityIds,
+          },
+        },
+      });
+
+      // Fetch campuses associated with the universities
+      const campuses = await payload.db.collections.campuses.find({
+        where: {
+          university_id: {
+            in: universityIds,
+          },
+        },
+      });
+
+      // Fetch programs associated with the campuses
+      const programIds = campuses.docs.map((campus) => campus.id);
+      const programs = await payload.db.collections.programs.find({
+        where: {
+          campus_id: {
+            in: programIds,
+          },
+        },
+      });
+
+      // Fetch fee structures associated with the programs
+      const feeStructures = await payload.db.collections.fee_structures.find({
+        where: {
+          program_id: {
+            in: programs.docs.map((program) => program.id),
+          },
+        },
+      });
+
+      // Process the comparison data
+      const comparisonData = universities.docs.map((university) => {
+        const campus = campuses.docs.find((c) => c.university_id === university.id);
+        const uniPrograms = programs.docs.filter((p) => p.campus_id === campus?.id);
+        const fees = feeStructures.docs.filter((f) =>
+          uniPrograms.some((p) => p.id === f.program_id)
+        );
+
+        return {
+          name: university.name,
+          location: campus?.address_id, // Replace with actual field if `address_id` needs mapping
+          gpa: university.gpa || 'N/A',
+          ib: university.ib || 'N/A',
+          percentageSystem: university.percentageSystem || 'N/A',
+          tuition: fees.reduce((sum, f) => sum + f.tuition_fee, 0) || 0,
+          costOfLiving: campus?.cost_of_living || 0,
+          total: fees.reduce((sum, f) => sum + f.tuition_fee, 0) + (campus?.cost_of_living || 0),
+          ielts: university.ielts || 'N/A',
+          toefl: university.toefl || 'N/A',
+          sat: university.sat || 'N/A',
+          students: university.total_students || 0,
+          facultyStrength: university.total_faculty || 0,
+          internationalStudents: university.international_students || 0,
+          acceptanceRate: university.acceptance_rate || 'N/A',
+          numberOfCourses: uniPrograms.length || 0,
+        };
+      });
+
+      res.status(200).json({ comparison: comparisonData });
+    } catch (error) {
+      console.error('Error fetching comparison data:', error);
+      res.status(500).json({ error: 'Failed to fetch comparison data.' });
+    }
+  });
+
   app.listen(process.env.PORT || 3000)
 }
 
