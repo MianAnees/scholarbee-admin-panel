@@ -123,14 +123,22 @@ export const assignSortingWeightsToPrograms = async () => {
     const programs: any = await payload.find({
       collection: 'programs',
       depth: 1,
-      limit: 1000
+      limit: 10000,
+      where: {
+        sorting_weight: {
+          exists: false, // Filters documents where sortingWeight does not exist or is null
+        },
+        // campus_id: {
+        //   in: ["66a3b5905d8ab0b21ad1c643", "66a7a8405d8ab0b21ad1f580"]
+        // }
+      },
     });
 
     console.log("Fetched programs:", programs);
 
     // Generate random sorting weights and update each program
-    const updates = programs.docs.map(async (program) => {
-      // Generate a random number between 10 and 90
+    // const updates = programs.docs.map(async (program) => {
+    for (let program of programs.docs) {
       const randomWeight = Math.floor(Math.random() * (90 - 10 + 1)) + 10;
 
       console.log(`Updating program ID: ${program.id} with sorting weight: ${randomWeight}`);
@@ -141,10 +149,13 @@ export const assignSortingWeightsToPrograms = async () => {
         id: program.id, // Use the program ID
         data: { sorting_weight: randomWeight },
       });
-    });
+      // });
+
+    }
+    // Generate a random number between 10 and 90
 
     // Wait for all updates to complete
-    await Promise.all(updates);
+    // await Promise.all(updates);
 
     console.log("Successfully updated sorting weights for all programs!");
   } catch (error) {
