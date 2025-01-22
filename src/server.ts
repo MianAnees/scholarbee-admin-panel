@@ -448,77 +448,304 @@ const start = async () => {
 
   app.post('/api/compare-universities', async (req, res) => {
     try {
-      const { universityIds } = req.body; // Array of university IDs to compare
-      console.log(universityIds, "-------- helloworld in -----");
+      const { programIds } = req.body;
 
-      if (!universityIds || universityIds.length !== 2) {
-        return res.status(400).json({ error: 'Please provide exactly two university IDs for comparison.' });
-      }
-
-      // Fetch universities
-      const universities = await payload.find({
-        collection: 'universities',
-        where: {
-          id: { in: universityIds },
+      const comparisonData = await payload.db.collections["programs"].aggregate([
+        // Match the specified program IDs
+        {
+          "$match": {
+            "_id": { "$in": programIds.map((id) => new ObjectId(id)) }
+          }
         },
-      });
-
-      // Fetch campuses associated with the universities
-      const campuses = await payload.find({
-        collection: 'campuses',
-        where: {
-          university_id: { in: universityIds },
+        // Lookup campus details
+        {
+          "$lookup": {
+            "from": "campuses",
+            "let": { "campusId": { "$toObjectId": "$campus_id" } },
+            "pipeline": [
+              {
+                "$match": {
+                  "$expr": { "$eq": ["$_id", "$$campusId"] }
+                }
+              }
+            ],
+            "as": "campus"
+          }
         },
-      });
-
-      // Fetch programs associated with the campuses
-      const campusIds = campuses.docs.map((campus) => campus.id);
-      const programs = await payload.find({
-        collection: 'programs',
-        where: {
-          campus_id: { in: campusIds },
+        {
+          "$unwind": {
+            "path": "$campus",
+            "preserveNullAndEmptyArrays": true
+          }
         },
-      });
-
-      // Fetch fee structures associated with the programs
-      const programIds = programs.docs.map((program) => program.id);
-      const feeStructures = await payload.find({
-        collection: 'fee_structures',
-        where: {
-          program_id: { in: programIds },
+        // Lookup address details
+        {
+          "$lookup": {
+            "from": "addresses",
+            "let": { "addressId": { "$toObjectId": "$campus.address_id" } },
+            "pipeline": [
+              {
+                "$match": {
+                  "$expr": { "$eq": ["$_id", "$$addressId"] }
+                }
+              }
+            ],
+            "as": "campusAddress"
+          }
         },
-      });
+        {
+          "$unwind": {
+            "path": "$campusAddress",
+            "preserveNullAndEmptyArrays": true
+          }
+        },
+        // Lookup fee structures
+        {
+          "$lookup": {
+            "from": "fee_structures",
+            "let": { "programId": "$_id" },
+            "pipeline": [
+              {
+                "$match": {
+                  "$expr": {
+                    "$eq": [
+                      { "$toObjectId": "$program_id" },
+                      { "$toObjectId": "$$programId" }
+                    ]
+                  }
+                }
+              }
+            ],
+            "as": "fees"
+          }
+        },
+        {
+          "$unwind": {
+            "path": "$fees",
+            "preserveNullAndEmptyArrays": true
+          }
+        },
+        // Lookup university details
+        {
+          "$lookup": {
+            "from": "universities",
+            "let": { "universityId": { "$toObjectId": "$campus.university_id" } },
+            "pipeline": [
+              {
+                "$match": {
+                  "$expr": { "$eq": ["$_id", "$$universityId"] }
+                }
+              }
+            ],
+            "as": "university"
+          }
+        },
+        {
+          "$unwind": {
+            "path": "$university",
+            "preserveNullAndEmptyArrays": true
+          }
+        },
+        // Add tuitionFee and applicationFee fields with default values
+        {
+          "$addFields": {
+            "tuitionFee": { "$ifNull": ["$fees.tuition_fee", 0] },
+            "applicationFee": { "$ifNull": ["$fees.application_fee", 0] }
+          }
+        },
+        // Group the results
+        {
+          "$group": {
+            "_id": "$_id",
+            "programName": { "$first": "$name" },
+            "major": { "$first": "$major" },
+            "duration": { "$first": "$duration" },
+            "creditHours": { "$first": "$credit_hours" },
+            "degreeLevel": { "$first": "$degree_level" },
+            "modeOfStudy": { "$first": "$mode_of_study" },
+            "languageOfInstruction": { "$first": "$language_of_instruction" },
+            "campusName": { "$first": "$campus.name" },
+            "campusFacilities": { "$first": "$campus.facilities" },
+            "campusLogo": { "$first": "$campus.logo_url" },
+            "campusAddress": { "$first": "$campusAddress" },
+            "universityName": { "$first": "$university.name" },
+            "universityRanking": { "$first": "$university.ranking" },
+            "totalTuitionFee": { "$sum": "$tuitionFee" },
+            "totalApplicationFee": { "$sum": "$applicationFee" },
+            "currency": { "$first": "$fees.currency" }
+          }
+        },
+        // Calculate total fee
+        {
+          "$addFields": {
+            "totalFee": {
+              "$add": ["$totalTuitionFee", "$totalApplicationFee"]
+            }
+          }
+        }
+      ]
+      );
+      console.log(JSON.stringify([
+        // Match the specified program IDs
+        {
+          $match: {
+            _id: { $in: programIds.map((id) => new ObjectId(id)) },
+          },
+        },
+        // Lookup campus details
 
-      console.log(feeStructures, programs, campuses, universities);
+        {
+          $lookup: {
+            from: "campuses",
+            let: {
+              campusId: {
+                $toObjectId: "$campus_id"
+              }
+            },
+            pipeline: [
+              {
+                $match: {
+                  $expr: {
+                    $eq: ["$_id", "$$campusId"]
+                  }
+                }
+              }
+            ],
+            as: "campus"
+          }
+        },
+        {
+          $unwind: {
+            path: "$campus",
+            preserveNullAndEmptyArrays: true
+          }
+        },
+        {
+          $lookup: {
+            from: "fee_structures",
+            let: {
+              programId: "$_id"
+            },
+            pipeline: [
+              {
+                $match: {
+                  $expr: {
+                    $eq: [
+                      {
+                        $toObjectId: "$program_id"
+                      },
+                      {
+                        $toObjectId: "$$programId"
+                      }
+                    ]
+                  }
+                }
+              }
+            ],
+            as: "fees"
+          }
+        },
+        {
+          $unwind: {
+            path: "$fees",
+            preserveNullAndEmptyArrays: true
+          }
+        },
+        {
+          $lookup: {
+            from: "universities",
+            let: {
+              universityId: {
+                $toObjectId: "$campus.university_id"
+              }
+            },
+            pipeline: [
+              {
+                $match: {
+                  $expr: {
+                    $eq: ["$_id", "$$universityId"]
+                  }
+                }
+              }
+            ],
+            as: "university"
+          }
+        },
+        {
+          $unwind: {
+            path: "$university",
+            preserveNullAndEmptyArrays: true
+          }
+        },
+        {
+          $addFields: {
+            tuitionFee: {
+              $ifNull: ["$fees.tuition_fee", 0]
+            },
+            applicationFee: {
+              $ifNull: ["$fees.application_fee", 0]
+            }
+          }
+        },
+        {
+          $group: {
+            _id: "$_id",
+            programName: {
+              $first: "$name"
+            },
+            major: {
+              $first: "$major"
+            },
+            duration: {
+              $first: "$duration"
+            },
+            creditHours: {
+              $first: "$credit_hours"
+            },
+            degreeLevel: {
+              $first: "$degree_level"
+            },
+            modeOfStudy: {
+              $first: "$mode_of_study"
+            },
+            languageOfInstruction: {
+              $first: "$language_of_instruction"
+            },
+            campusName: {
+              $first: "$campus.name"
+            },
+            campusFacilities: {
+              $first: "$campus.facilities"
+            },
+            universityName: {
+              $first: "$university.name"
+            },
+            universityRanking: {
+              $first: "$university.ranking"
+            },
+            totalTuitionFee: {
+              $sum: "$tuitionFee"
+            },
+            totalApplicationFee: {
+              $sum: "$applicationFee"
+            },
+            currency: {
+              $first: "$fees.currency"
+            }
+          }
+        },
+        {
+          $addFields: {
+            totalFee: {
+              $add: [
+                "$totalTuitionFee",
+                "$totalApplicationFee"
+              ]
+            }
+          }
+        }
 
-      // Process the comparison data
-      const comparisonData = universities.docs.map((university) => {
-        const campus = campuses.docs.find((c) => c.university_id === university.id);
-        const uniPrograms = programs.docs.filter((p) => p.campus_id === campus?.id);
-        const fees = feeStructures.docs.filter((f) =>
-          uniPrograms.some((p) => p.id === f.program_id)
-        );
-
-        return {
-          name: university.name,
-          location: campus?.address_id || 'N/A', // Replace with actual mapping if necessary
-          gpa: university.gpa || 'N/A',
-          ib: university.ib || 'N/A',
-          percentageSystem: university.percentageSystem || 'N/A',
-          tuition: fees.reduce((sum, f) => sum + (f.tuition_fee as number), 0) || 0,
-          costOfLiving: campus?.cost_of_living || 0,
-          total: fees.reduce((sum, f) => sum + (f.tuition_fee as number), 0) + ((campus?.cost_of_living as number) || 0),
-          ielts: university.ielts || 'N/A',
-          toefl: university.toefl || 'N/A',
-          sat: university.sat || 'N/A',
-          students: university.total_students || 0,
-          facultyStrength: university.total_faculty || 0,
-          internationalStudents: university.international_students || 0,
-          acceptanceRate: university.acceptance_rate || 'N/A',
-          numberOfCourses: uniPrograms.length || 0,
-        };
-      });
-
+      ]))
       res.status(200).json({ comparison: comparisonData });
     } catch (error) {
       console.error('Error fetching comparison data:', error);
