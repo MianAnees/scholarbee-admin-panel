@@ -120,34 +120,55 @@ import payload from 'payload';
 export const assignSortingWeightsToPrograms = async () => {
   try {
     // Fetch all programs from the 'programs' collection
-    const programs: any = await payload.find({
-      collection: 'programs',
+    // const programs: any = await payload.find({
+    //   collection: 'admissions',
+    //   depth: 1,
+    //   limit: 10000,
+    //   // where: {
+    //   //   sorting_weight: {
+    //   //     exists: false, // Filters documents where sortingWeight does not exist or is null
+    //   //   },
+    //   //   // campus_id: {
+    //   //   //   in: ["66a3b5905d8ab0b21ad1c643", "66a7a8405d8ab0b21ad1f580"]
+    //   //   // }
+    //   // },
+    // });
+
+    // console.log("Fetched programs:", programs);
+
+
+    const admissions = await payload.find({
+      collection: 'admissions',
       depth: 1,
       limit: 10000,
       where: {
-        sorting_weight: {
-          exists: false, // Filters documents where sortingWeight does not exist or is null
-        },
-        // campus_id: {
-        //   in: ["66a3b5905d8ab0b21ad1c643", "66a7a8405d8ab0b21ad1f580"]
-        // }
+        or: [
+          {
+            and: [
+              {
+                admission_deadline: {
+                  less_than: '2025-01-21T12:00:00.000Z',
+                },
+              },
+            ],
+          },
+        ],
       },
     });
-
-    console.log("Fetched programs:", programs);
-
+    console.log(admissions)
     // Generate random sorting weights and update each program
     // const updates = programs.docs.map(async (program) => {
-    for (let program of programs.docs) {
-      const randomWeight = Math.floor(Math.random() * (90 - 10 + 1)) + 10;
-
-      console.log(`Updating program ID: ${program.id} with sorting weight: ${randomWeight}`);
+    // for (let program of programs.docs) {
+    for (let program of admissions.docs) {
+      // const randomWeight = Math.floor(Math.random() * (90 - 10 + 1)) + 10;
+      // console.log(program, "--- hellow orl")
+      // console.log(`Updating program ID: ${program.id} with sorting weight: ${randomWeight}`);
 
       // Update the program with the calculated sorting weight
       await payload.update({
-        collection: 'programs',
+        collection: 'admissions',
         id: program.id, // Use the program ID
-        data: { sorting_weight: randomWeight },
+        data: { admission_deadline: "2025-02-15T12:00:00.000Z" },
       });
       // });
 
