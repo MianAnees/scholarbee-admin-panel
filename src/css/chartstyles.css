@@ -1,0 +1,38 @@
+/* chartStyles.css */
+
+/* Default series colors (First and Second series) */
+.ct-series-a .ct-line,
+.ct-series-a .ct-bar,
+.ct-series-a .ct-point,
+.ct-series-a .ct-slice-donut {
+  stroke: #53acf5 !important; /* Darker sky blue stroke */
+  fill: #53acf5 !important;  /* Darker sky blue fill */
+}
+
+.ct-series-b .ct-line,
+.ct-series-b .ct-bar,
+.ct-series-b .ct-point,
+.ct-series-b .ct-slice-donut {
+  stroke: #C9E5FC !important; /* Light sky blue stroke */
+  fill: #C9E5FC !important;  /* Light sky blue fill */
+}
+
+/* Adjust the area fill for line charts */
+.ct-series-a .ct-area {
+  fill: #C9E5FC !important; /* Light sky blue area fill for series A */
+}
+
+.ct-series-b .ct-area {
+  fill: #53acf5 !important; /* Darker sky blue area fill for series B */
+}
+
+/* Make grid lines subtle */
+.ct-grid {
+  stroke: rgba(0, 0, 0, 0.1) !important; /* Subtle grid lines */
+}
+
+/* Pie/Donut labels: Improve visibility */
+.ct-label {
+  fill: #000000 !important; /* Black for better contrast */
+  font-size: 12px !important; /* Ensure labels are readable */
+}
