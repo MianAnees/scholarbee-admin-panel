@@ -97,7 +97,7 @@ const start = async () => {
 
       const verificationUrl = `${process.env.FRONTEND_URL}/verification/${verifyToken}`;
       const mailOptions: any = {
-        from: 'alitahir@pickysolutions.com',
+        from: 'no-reply@scholarbee.pk',
         to: user.email,
         subject: 'Verify Your Email Address',
         html: `<p>Please verify your email by clicking the following link: <a href=${verificationUrl}>Verification Link</a></p>`
@@ -108,7 +108,7 @@ const start = async () => {
       }).catch((error) => {
         console.log(error, "while sending verification email!")
       })
-      res.status(200).json({ user });
+      res.status(200).json({ message: "Verification link sent to the email successfully", user });
     } catch (error) {
       console.log(error)
       res.status(500).json({ error: 'Failed to complete signup.' });
@@ -418,6 +418,7 @@ const start = async () => {
       });
 
       const result = await payload.db.collections['admission_programs'].aggregate(pipeline)
+      console.log(JSON.stringify(pipeline), " in aggreagtion of filter programs ")
 
       const docs = result[0]?.docs || [];
       const totalCount = result[0]?.totalCount?.[0]?.count || 0;
@@ -436,7 +437,6 @@ const start = async () => {
       };
 
       res.status(200).json({ docs, pagination });
-
       // res.status(200).json({ docs, totalCount, totalPages, currentPage: pageNum });
     } catch (err) {
       console.error(err);
