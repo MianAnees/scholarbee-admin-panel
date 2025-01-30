@@ -43,6 +43,12 @@ const AdmissionPrograms: CollectionConfig = {
             label: 'Fee',
         },
         {
+            name: 'redirect_deeplink',
+            type: 'text',
+            required: false,
+            label: 'Redirection Link',
+        },
+        {
             name: 'available_seats',
             type: 'number',
             required: true,
