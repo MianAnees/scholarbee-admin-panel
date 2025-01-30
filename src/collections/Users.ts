@@ -177,6 +177,13 @@ const Users: CollectionConfig = {
       label: 'Phone Number',
     },
     {
+      name: 'current_stage',
+      type: 'number',
+      required: false,
+      defaultValue: 0,
+      label: 'Current Stage',
+    },
+    {
       name: 'fatherEmailAddress',
       type: 'email',
       required: false,
