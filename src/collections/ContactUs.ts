@@ -74,8 +74,8 @@ const ContactUs: CollectionConfig = {
             name: 'study_level',
             type: 'select',
             options: [
-                'Bachelor',
-                'Master',
+                'Bachelors',
+                'Masters',
                 'Phd',
             ],
             required: false,
@@ -99,6 +99,12 @@ const ContactUs: CollectionConfig = {
             label: 'Country',
         },
         {
+            name: 'study_city',
+            type: 'text',
+            required: false,
+            label: 'City',
+        },
+        {
             name: 'is_scholarship',
             type: 'checkbox',
             defaultValue: false,
@@ -109,6 +115,14 @@ const ContactUs: CollectionConfig = {
             type: 'textarea',
             required: false,
             label: 'Message',
+        },
+        {
+            name: 'campusesIds',
+            type: 'relationship',
+            relationTo: 'campuses', // Assuming you have a 'campuses' collection
+            hasMany: true, // Allow multiple campuses
+            required: false,
+            label: 'Interested Campuses',
         },
         {
             name: 'created_at',
