@@ -10,7 +10,6 @@ import Users from './collections/Users'
 import UserProfiles from './collections/UserProfiles'
 import Universities from './collections/Universities'
 import StudentScholarships from './collections/StudentScholarships'
-import Scholarships from './collections/Scholarships'
 import Programs from './collections/Programs'
 import Messages from './collections/Messages'
 import Courses from './collections/Courses'
@@ -45,6 +44,9 @@ import ProgramTypeTemplate from './collections/ProgramTypeTemplate'
 import ProgramsTemplate from './collections/ProgramTemplate'
 import PostalCodes from './collections/PostalCode'
 import CustomDashboardView from './pages/dashboard'
+import { ScholarshipOrganizations } from './collections/ScholarshipOrganisations'
+import { Regions } from './collections/Regions'
+import { Scholarships } from './collections/Scholarships'
 // import Applications from './collections/Applications'
 
 
@@ -74,7 +76,8 @@ export default buildConfig({
     UserProfiles,
     Universities,
     StudentScholarships,
-    Scholarships,
+    ScholarshipOrganizations,
+    Regions,
     Programs,
     Messages,
     Courses,
@@ -98,6 +101,7 @@ export default buildConfig({
     FormFieldValues,
     Applications,
     AdmissionPrograms,
+    Scholarships,
     Payments,
     ContactUs,
     Cities, Countries, States, ProgramTypeTemplate, ProgramsTemplate, PostalCodes
