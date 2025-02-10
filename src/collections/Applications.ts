@@ -129,6 +129,13 @@ const Applications: CollectionConfig = {
             ],
         },
         {
+            name: 'admission_program_id',
+            type: 'relationship',
+            relationTo: 'admission_programs',
+            required: true,
+            label: 'Admission Program',
+        },
+        {
             name: 'program',
             type: 'relationship',
             relationTo: 'programs',
