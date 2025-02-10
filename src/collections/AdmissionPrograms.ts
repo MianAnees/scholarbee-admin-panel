@@ -74,6 +74,13 @@ const AdmissionPrograms: CollectionConfig = {
             ],
         },
         {
+            name: 'favouriteBy',
+            type: 'relationship',
+            relationTo: 'users',
+            hasMany: true, // Allows multiple users to be stored
+            label: 'Favourite By Users',
+        },
+        {
             name: 'created_at',
             type: 'date',
             admin: {
