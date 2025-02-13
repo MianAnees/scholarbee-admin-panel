@@ -2,7 +2,7 @@ import express from 'express'
 import payload from 'payload'
 import cors from 'cors'; // Import the CORS middleware
 import crypto from 'crypto';
-import { transporter } from './utiles/mailConfig';
+import { sendEmail } from './utiles/mailConfig';
 import dotenv from 'dotenv';
 import { ObjectId } from 'mongodb';
 import { insertDataToCollections } from './scripts/insert-data-api';
@@ -103,7 +103,7 @@ const start = async () => {
         html: `<p>Please verify your email by clicking the following link: <a href=${verificationUrl}>Verification Link</a></p>`
       };
 
-      transporter.sendMail(mailOptions).then((res) => {
+      sendEmail(mailOptions).then((res) => {
         console.log(res)
       }).catch((error) => {
         console.log(error, "while sending verification email!")

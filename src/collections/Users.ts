@@ -1,6 +1,6 @@
 import payload from 'payload';
 import { CollectionConfig } from 'payload/types';
-import { transporter } from '../utiles/mailConfig';
+import { sendEmail } from '../utiles/mailConfig';
 
 const Users: CollectionConfig = {
   slug: 'users',
