@@ -198,79 +198,85 @@ const Applications: CollectionConfig = {
             },
         },
     ],
-
     hooks: {
         beforeChange: [
             async ({ data, originalDoc, req }) => {
-                // Only perform this check when creating a new application.
-                if (!originalDoc) {
-                    // Check if both applicant and admission_program_id are provided.
-                    if (data.applicant && data.admission_program_id) {
-                        const existingApplication = await req.payload.find({
-                            collection: 'applications',
-                            where: {
-                                applicant: { equals: data.applicant },
-                                admission_program_id: { equals: data.admission_program_id },
-                            },
-                            limit: 1,
+                try {
+                    // Only perform this check when creating a new application.
+                    if (!originalDoc) {
+                        // Check if both applicant and admission_program_id are provided.
+                        if (data.applicant && data.admission_program_id) {
+                            const existingApplication = await req.payload.find({
+                                collection: 'applications',
+                                where: {
+                                    applicant: { equals: data.applicant },
+                                    admission_program_id: { equals: data.admission_program_id },
+                                },
+                                limit: 1,
+                            });
+
+                            if (existingApplication.docs.length > 0) {
+                                throw new Error('Already applied for this admission program.');
+                            }
+                        }
+
+                        // Populate applicant_snapshot using the applicant's current information.
+                        const user: any = await req.payload.findByID({
+                            collection: 'users',
+                            id: data.applicant,
                         });
 
-                        if (existingApplication.docs.length > 0) {
-                            throw new Error('Already applied for this admission program.');
-                        }
-                    }
-
-                    // Populate applicant_snapshot using the applicant's current information.
-                    const user: any = await req.payload.findByID({
-                        collection: 'users',
-                        id: data.applicant,
-                    });
-
-                    data.applicant_snapshot = {
-                        first_name: user.first_name || null,
-                        last_name: user.last_name || null,
-                        email: user.email || null,
-                        phone_number: user.phone_number || null,
-                        date_of_birth: user.date_of_birth || null,
-                        father_name: user.father_name || null,
-                        father_profession: user.father_profession || null,
-                        father_status: user.father_status || null,
-                        father_income: user.father_income || null,
-                        mother_name: user.mother_name || null,
-                        mother_profession: user.mother_profession || null,
-                        mother_status: user.mother_status || null,
-                        mother_income: user.mother_income || null,
-                        religion: user.religion || null,
-                        special_person: user.special_person || null,
-                        gender: user.gender || null,
-                        nationality: user.nationality || null,
-                        provinceOfDomicile: user.provinceOfDomicile || null,
-                        districtOfDomicile: user.districtOfDomicile || null,
-                        stateOrProvince: user.stateOrProvince || null,
-                        city: user.city || null,
-                        postalCode: user.postalCode || null,
-                        streetAddress: user.streetAddress || null,
-                        profile_image_url: user.profile_image_url || null,
-                        user_type: user.user_type || null,
-                        educational_backgrounds: user.educational_backgrounds?.map((edu: any) => ({
-                            education_level: edu.education_level || null,
-                            field_of_study: edu.field_of_study || null,
-                            school_college_university: edu.school_college_university || null,
-                            marks_gpa: {
-                                total_marks_gpa: edu.marks_gpa?.total_marks_gpa || null,
-                                obtained_marks_gpa: edu.marks_gpa?.obtained_marks_gpa || null,
+                        data.applicant_snapshot = {
+                            first_name: user.first_name || null,
+                            last_name: user.last_name || null,
+                            email: user.email || null,
+                            phone_number: user.phone_number || null,
+                            date_of_birth: user.date_of_birth || null,
+                            father_name: user.father_name || null,
+                            father_profession: user.father_profession || null,
+                            father_status: user.father_status || null,
+                            father_income: user.father_income || null,
+                            mother_name: user.mother_name || null,
+                            mother_profession: user.mother_profession || null,
+                            mother_status: user.mother_status || null,
+                            mother_income: user.mother_income || null,
+                            religion: user.religion || null,
+                            special_person: user.special_person || null,
+                            gender: user.gender || null,
+                            nationality: user.nationality || null,
+                            provinceOfDomicile: user.provinceOfDomicile || null,
+                            districtOfDomicile: user.districtOfDomicile || null,
+                            stateOrProvince: user.stateOrProvince || null,
+                            city: user.city || null,
+                            postalCode: user.postalCode || null,
+                            streetAddress: user.streetAddress || null,
+                            profile_image_url: user.profile_image_url || null,
+                            user_type: user.user_type || null,
+                            educational_backgrounds:
+                                user.educational_backgrounds?.map((edu: any) => ({
+                                    education_level: edu.education_level || null,
+                                    field_of_study: edu.field_of_study || null,
+                                    school_college_university: edu.school_college_university || null,
+                                    marks_gpa: {
+                                        total_marks_gpa: edu.marks_gpa?.total_marks_gpa || null,
+                                        obtained_marks_gpa: edu.marks_gpa?.obtained_marks_gpa || null,
+                                    },
+                                    year_of_passing: edu.year_of_passing || null,
+                                    board: edu.board || null,
+                                    transcript: edu.transcript || null,
+                                })) || [],
+                            national_id_card: {
+                                front_side: user.national_id_card?.front_side || null,
+                                back_side: user.national_id_card?.back_side || null,
                             },
-                            year_of_passing: edu.year_of_passing || null,
-                            board: edu.board || null,
-                            transcript: edu.transcript || null,
-                        })) || [],
-                        national_id_card: {
-                            front_side: user.national_id_card?.front_side || null,
-                            back_side: user.national_id_card?.back_side || null,
-                        },
-                    };
+                        };
+                    }
+                    return data;
+                } catch (error: any) {
+                    console.error('Error in beforeChange hook for Applications:', error);
+                    // Rethrow the error so Payload can return it to the frontend
+                    throw new Error(error.message || 'Error processing application');
                 }
-                return data;
             },
         ],
     },
