@@ -1,5 +1,4 @@
 import { CollectionConfig } from 'payload/types';
-import { ObjectId } from 'mongodb';
 
 const Applications: CollectionConfig = {
     slug: 'applications',
@@ -178,17 +177,15 @@ const Applications: CollectionConfig = {
                 }
 
                 try {
-                    console.log(applicationId, status, "----- before api call ----")
+                    console.log(applicationId, status, "----- before api call ----");
                     // Update the status of the application
                     const updatedApplication = await req.payload.update({
                         collection: 'applications',
-                        id: applicationId, // Convert string to ObjectId
-                        data: {
-                            status,
-                        },
+                        id: applicationId,
+                        data: { status },
                     });
 
-                    console.log(updatedApplication, "------ hellow world -----")
+                    console.log(updatedApplication, "------ hellow world -----");
 
                     return res.status(200).json({
                         message: 'Application status updated successfully',
@@ -205,14 +202,30 @@ const Applications: CollectionConfig = {
     hooks: {
         beforeChange: [
             async ({ data, originalDoc, req }) => {
+                // Only perform this check when creating a new application.
                 if (!originalDoc) {
-                    // Fetch the applicant's latest information
+                    // Check if both applicant and admission_program_id are provided.
+                    if (data.applicant && data.admission_program_id) {
+                        const existingApplication = await req.payload.find({
+                            collection: 'applications',
+                            where: {
+                                applicant: { equals: data.applicant },
+                                admission_program_id: { equals: data.admission_program_id },
+                            },
+                            limit: 1,
+                        });
+
+                        if (existingApplication.docs.length > 0) {
+                            throw new Error('Already applied for this admission program.');
+                        }
+                    }
+
+                    // Populate applicant_snapshot using the applicant's current information.
                     const user: any = await req.payload.findByID({
                         collection: 'users',
                         id: data.applicant,
                     });
 
-                    // Populate applicant_snapshot only with available fields
                     data.applicant_snapshot = {
                         first_name: user.first_name || null,
                         last_name: user.last_name || null,
@@ -239,7 +252,7 @@ const Applications: CollectionConfig = {
                         streetAddress: user.streetAddress || null,
                         profile_image_url: user.profile_image_url || null,
                         user_type: user.user_type || null,
-                        educational_backgrounds: user.educational_backgrounds?.map((edu) => ({
+                        educational_backgrounds: user.educational_backgrounds?.map((edu: any) => ({
                             education_level: edu.education_level || null,
                             field_of_study: edu.field_of_study || null,
                             school_college_university: edu.school_college_university || null,
@@ -264,4 +277,3 @@ const Applications: CollectionConfig = {
 };
 
 export default Applications;
-

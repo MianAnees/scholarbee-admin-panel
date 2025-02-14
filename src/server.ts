@@ -64,27 +64,55 @@ const start = async () => {
 
   app.post('/api/signup', async (req, res) => {
     const { email, password, first_name, last_name, phone_number, user_type } = req.body;
-    let userCreated = false;
-    let user: any;
+
     try {
-      const existingUser = await payload.find({
+      // Check if a user with this email already exists
+      const existingUserResult = await payload.find({
         collection: 'users',
         where: { email: { equals: email } },
-        limit: 1
+        limit: 1,
       });
 
-      if (existingUser && existingUser.docs.length > 0) {
-        return res.status(400).json({ error: "Email already exists." });
+      if (existingUserResult && existingUserResult.docs.length > 0) {
+        const existingUser = existingUserResult.docs[0];
+
+        // If the user exists but is not verified, resend the verification link
+        if (!existingUser._verified) {
+          const newVerifyToken = crypto.randomBytes(20).toString('hex');
+
+          await payload.update({
+            collection: 'users',
+            id: existingUser.id,
+            data: { verifyToken: newVerifyToken, _verified: false },
+            overrideAccess: true,
+          });
+
+          const verificationUrl = `${process.env.FRONTEND_URL}/verification/${newVerifyToken}`;
+          const mailOptions: any = {
+            from: 'no-reply@scholarbee.pk',
+            to: existingUser.email,
+            subject: 'Verify Your Email Address',
+            html: `<p>Please verify your email by clicking the following link: <a href="${verificationUrl}">Verification Link</a></p>`,
+          };
+
+          await sendEmail(mailOptions);
+
+          return res.status(200).json({
+            message: 'User already exists but is not verified. A new verification link has been sent to your email.',
+            user: existingUser,
+          });
+        }
+
+        // If the user is already verified, do not allow duplicate signups
+        return res.status(400).json({ error: 'Email already exists.' });
       }
 
-      user = await payload.create({
+      // If no existing user, create a new user
+      const user = await payload.create({
         collection: 'users',
-        data: {
-          email, password, first_name, last_name, phone_number, user_type
-        },
+        data: { email, password, first_name, last_name, phone_number, user_type },
         overrideAccess: true,
       });
-      userCreated = true;
 
       const verifyToken = crypto.randomBytes(20).toString('hex');
 
@@ -100,18 +128,74 @@ const start = async () => {
         from: 'no-reply@scholarbee.pk',
         to: user.email,
         subject: 'Verify Your Email Address',
-        html: `<p>Please verify your email by clicking the following link: <a href=${verificationUrl}>Verification Link</a></p>`
+        html: `<p>Please verify your email by clicking the following link: <a href="${verificationUrl}">Verification Link</a></p>`,
       };
 
-      sendEmail(mailOptions).then((res) => {
-        console.log(res)
-      }).catch((error) => {
-        console.log(error, "while sending verification email!")
-      })
-      res.status(200).json({ message: "Verification link sent to the email successfully", user });
+      await sendEmail(mailOptions);
+
+      res.status(200).json({ message: 'Verification link sent to your email successfully.', user });
     } catch (error) {
-      console.log(error)
+      console.log(error);
       res.status(500).json({ error: 'Failed to complete signup.' });
+    }
+  });
+
+
+  // ********** NEW: RESEND VERIFICATION ENDPOINT **********
+  app.post('/api/resend-verification', async (req, res) => {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ error: 'Email is required.' });
+    }
+
+    try {
+      // Look up the user by email
+      const result = await payload.find({
+        collection: 'users',
+        where: { email: { equals: email } },
+        limit: 1,
+      });
+
+      if (!result.docs || result.docs.length === 0) {
+        return res.status(404).json({ error: 'User not found.' });
+      }
+
+      const user = result.docs[0];
+
+      // Check if the user is already verified
+      if (user._verified) {
+        return res.status(400).json({ error: 'User is already verified.' });
+      }
+
+      // Generate a new verification token
+      const verifyToken = crypto.randomBytes(20).toString('hex');
+
+      // Update the user record with the new token
+      await payload.update({
+        collection: 'users',
+        id: user.id,
+        data: { verifyToken, _verified: false },
+        overrideAccess: true,
+      });
+
+      // Construct the verification URL
+      const verificationUrl = `${process.env.FRONTEND_URL}/verification/${verifyToken}`;
+
+      // Define the email options
+      const mailOptions: any = {
+        from: 'no-reply@scholarbee.pk',
+        to: user.email,
+        subject: 'Verify Your Email Address',
+        html: `<p>Please verify your email by clicking the following link: <a href="${verificationUrl}">Verification Link</a></p>`
+      };
+
+      // Send the verification email
+      await sendEmail(mailOptions);
+      res.status(200).json({ message: 'Verification link resent successfully.' });
+    } catch (error) {
+      console.error('Error in resend-verification:', error);
+      res.status(500).json({ error: 'Failed to resend verification link.' });
     }
   });
 
@@ -901,12 +985,11 @@ const start = async () => {
       });
     } catch (error) {
       console.error('Login failed:', error);
-
       // Handle specific error responses
-      if (error.message === 'Incorrect email or password') {
-        return res.status(401).json({ error: 'Invalid email or password.' });
-      }
-      res.status(500).json({ error: 'Internal server error' });
+      // if (error.message === 'Incorrect email or password') {
+      return res.status(401).json({ error: 'Invalid email or password.' });
+      // }
+      // res.status(500).json({ error: 'Internal server error' });
     }
   });
 
@@ -1007,6 +1090,9 @@ const start = async () => {
   //     res.status(500).json({ error: 'Failed to fetch comparison data.' });
   //   }
   // });
+
+
+
 
   app.listen(process.env.PORT || 3000)
 }
