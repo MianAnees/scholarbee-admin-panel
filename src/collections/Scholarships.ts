@@ -50,6 +50,12 @@ const Scholarships: CollectionConfig = {
             ],
             label: 'Scholarship Type',
         },
+        {
+            name: 'image_url',
+            type: 'text',
+            required: false,
+            label: 'Image Url',
+        },
         // Organization Information
         {
             name: 'organization_id',
