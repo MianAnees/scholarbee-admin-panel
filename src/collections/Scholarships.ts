@@ -4,6 +4,21 @@ import { CollectionConfig } from 'payload/types';
 
 const Scholarships: CollectionConfig = {
     slug: 'scholarships',
+    access: {
+        // Allow public read access
+        read: () => true,
+
+        // Restrict create, update, and delete to authenticated users
+        create: ({ req: { user } }) => {
+            return !!user; // Only allow if a user is logged in
+        },
+        update: ({ req: { user } }) => {
+            return !!user; // Only allow if a user is logged in
+        },
+        delete: ({ req: { user } }) => {
+            return !!user; // Only allow if a user is logged in
+        },
+    },
     labels: {
         singular: 'Scholarship',
         plural: 'Scholarships',
